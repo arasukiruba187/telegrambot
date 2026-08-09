@@ -185,17 +185,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Helper: Touch Scroll & Long Press Detector
+  // Bulletproof Mobile Touch & Long Press Event Detector (Prevents Double Toggling)
   function addLongPressListener(element, onClickCallback, onLongPressCallback) {
     let pressTimer = null;
     let isLongPress = false;
     let isScrolling = false;
+    let touchHandled = false;
     let startX = 0;
     let startY = 0;
 
-    const startTouch = (e) => {
+    element.addEventListener('touchstart', (e) => {
       if (e.touches && e.touches.length > 1) return;
-      const touch = e.touches ? e.touches[0] : e;
+      touchHandled = false;
+      const touch = e.touches[0];
       startX = touch.clientX;
       startY = touch.clientY;
       isLongPress = false;
@@ -205,62 +207,48 @@ document.addEventListener('DOMContentLoaded', () => {
       pressTimer = setTimeout(() => {
         if (!isScrolling) {
           isLongPress = true;
+          touchHandled = true;
           triggerHaptic('impact');
           onLongPressCallback(e);
         }
       }, 500);
-    };
+    }, { passive: true });
 
-    const moveTouch = (e) => {
+    element.addEventListener('touchmove', (e) => {
       if (!e.touches) return;
       const touch = e.touches[0];
       const deltaX = Math.abs(touch.clientX - startX);
       const deltaY = Math.abs(touch.clientY - startY);
 
-      if (deltaX > 8 || deltaY > 8) {
+      if (deltaX > 10 || deltaY > 10) {
         isScrolling = true;
         if (pressTimer) {
           clearTimeout(pressTimer);
           pressTimer = null;
         }
       }
-    };
+    }, { passive: true });
 
-    const endTouch = (e) => {
+    element.addEventListener('touchend', (e) => {
       if (pressTimer) {
         clearTimeout(pressTimer);
         pressTimer = null;
       }
 
       if (!isScrolling && !isLongPress && onClickCallback) {
+        touchHandled = true;
         onClickCallback(e);
       }
-    };
-
-    element.addEventListener('touchstart', startTouch, { passive: true });
-    element.addEventListener('touchmove', moveTouch, { passive: true });
-    element.addEventListener('touchend', endTouch);
-
-    element.addEventListener('mousedown', (e) => {
-      startX = e.clientX;
-      startY = e.clientY;
-      isLongPress = false;
-      isScrolling = false;
-      pressTimer = setTimeout(() => {
-        if (!isScrolling) {
-          isLongPress = true;
-          triggerHaptic('impact');
-          onLongPressCallback(e);
-        }
-      }, 500);
     });
 
-    element.addEventListener('mouseup', (e) => {
-      if (pressTimer) {
-        clearTimeout(pressTimer);
-        pressTimer = null;
+    element.addEventListener('click', (e) => {
+      if (touchHandled) {
+        e.stopPropagation();
+        e.preventDefault();
+        touchHandled = false;
+        return;
       }
-      if (!isScrolling && !isLongPress && onClickCallback) {
+      if (!isLongPress && onClickCallback) {
         onClickCallback(e);
       }
     });
