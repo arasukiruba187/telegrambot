@@ -1,4 +1,5 @@
-require('dotenv').config();
+const https = require('https');
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -9,6 +10,32 @@ const { sendVaultFileToChat } = require('./bot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Health Check Endpoint (For Uptime Pings)
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, status: 'online', timestamp: new Date().toISOString() });
+});
+
+// Automated Keep-Alive Engine (Pings Render public URL every 10 minutes to prevent sleep)
+function startKeepAlive() {
+  const renderUrl = process.env.RENDER_EXTERNAL_URL || 'https://telegrambot-651m.onrender.com';
+  console.log(`[Keep-Alive] Engine initialized targeting: ${renderUrl}`);
+
+  setInterval(() => {
+    try {
+      const targetUrl = `${renderUrl}/api/health`;
+      const protocol = targetUrl.startsWith('https') ? https : http;
+      
+      protocol.get(targetUrl, (res) => {
+        console.log(`[Keep-Alive] Ping success (${res.statusCode}) - Server active`);
+      }).on('error', (err) => {
+        console.log(`[Keep-Alive] Ping notice: ${err.message}`);
+      });
+    } catch (err) {
+      console.log(`[Keep-Alive] Error: ${err.message}`);
+    }
+  }, 10 * 60 * 1000); // 10 minutes interval
+}
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, '..', 'uploads');
@@ -561,4 +588,5 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Telegram Document Vault Server running on http://localhost:${PORT}`);
+  startKeepAlive();
 });
