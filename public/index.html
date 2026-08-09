@@ -219,7 +219,64 @@
     </div>
   </div>
 
-  <!-- 2. New Folder Modal -->
+  <!-- 2. LONG-PRESS ITEM CONTEXT MENU BOTTOM SHEET -->
+  <div class="sheet-backdrop" id="sheet-item-context">
+    <div class="bottom-sheet-card">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title-row">
+        <div class="context-item-header">
+          <h2 id="context-item-title">Folder Name</h2>
+          <span class="context-item-subtitle" id="context-item-subtitle">Folder</span>
+        </div>
+        <button class="sheet-close-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="action-menu-list">
+        <!-- Rename Option -->
+        <button class="menu-action-item" id="context-option-rename">
+          <div class="menu-icon-box icon-blue">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          </div>
+          <div class="menu-text-col">
+            <h3>Rename</h3>
+            <p>Change name of this item</p>
+          </div>
+        </button>
+
+        <!-- Delete Option -->
+        <button class="menu-action-item danger" id="context-option-delete">
+          <div class="menu-icon-box icon-rose">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </div>
+          <div class="menu-text-col">
+            <h3 style="color: #f87171;">Delete</h3>
+            <p>Permanently remove from vault</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. RENAME ITEM MODAL -->
+  <div class="sheet-backdrop" id="modal-rename-item">
+    <div class="center-dialog-card">
+      <div class="dialog-icon-badge">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+      </div>
+      <h2>Rename Item</h2>
+      <div class="dialog-input-group">
+        <label>New Name</label>
+        <input type="text" id="input-rename-name" placeholder="Enter new name..." autocomplete="off">
+      </div>
+      <div class="dialog-btns">
+        <button class="btn-cancel" id="btn-cancel-rename">Cancel</button>
+        <button class="btn-primary" id="btn-confirm-rename">Save Name</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. New Folder Modal -->
   <div class="sheet-backdrop" id="modal-new-folder">
     <div class="center-dialog-card">
       <div class="dialog-icon-badge">
@@ -237,7 +294,7 @@
     </div>
   </div>
 
-  <!-- 3. Upload Progress Modal -->
+  <!-- 5. Upload Progress Modal -->
   <div class="sheet-backdrop" id="modal-upload-progress">
     <div class="center-dialog-card upload-card">
       <div class="spinner-wrapper">
@@ -260,7 +317,7 @@
     </div>
   </div>
 
-  <!-- 4. File Preview & Telegram Download Sheet -->
+  <!-- 6. File Preview & Telegram Download Sheet -->
   <div class="sheet-backdrop" id="sheet-file-details">
     <div class="bottom-sheet-card file-details-sheet">
       <div class="sheet-handle"></div>

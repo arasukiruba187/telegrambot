@@ -168,7 +168,28 @@ app.post('/api/folders', (req, res) => {
 });
 
 /**
- * 4. Delete Folder
+ * 4. Rename Folder
+ */
+app.put('/api/folders/:id', (req, res) => {
+  try {
+    const userId = req.body.user_id || DEFAULT_USER_ID;
+    const folderId = parseInt(req.params.id, 10);
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Folder name is required' });
+    }
+
+    db.prepare('UPDATE folders SET name = ? WHERE id = ? AND user_id = ?').run(name.trim(), folderId, userId);
+    const updated = db.prepare('SELECT * FROM folders WHERE id = ?').get(folderId);
+    res.json({ success: true, folder: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * 5. Delete Folder
  */
 app.delete('/api/folders/:id', (req, res) => {
   try {
@@ -183,7 +204,7 @@ app.delete('/api/folders/:id', (req, res) => {
 });
 
 /**
- * 5. Files List & Search API
+ * 6. Files List & Search API
  */
 app.get('/api/files', (req, res) => {
   try {
@@ -251,7 +272,7 @@ app.get('/api/files', (req, res) => {
 });
 
 /**
- * 6. File Upload Endpoint
+ * 7. File Upload Endpoint
  */
 app.post('/api/files/upload', upload.single('file'), (req, res) => {
   try {
@@ -294,7 +315,28 @@ app.post('/api/files/upload', upload.single('file'), (req, res) => {
 });
 
 /**
- * 7. Dispatch Download File to Telegram Chat
+ * 8. Rename File
+ */
+app.put('/api/files/:id', (req, res) => {
+  try {
+    const userId = req.body.user_id || DEFAULT_USER_ID;
+    const fileId = parseInt(req.params.id, 10);
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'File name is required' });
+    }
+
+    db.prepare('UPDATE files SET name = ? WHERE id = ? AND user_id = ?').run(name.trim(), fileId, userId);
+    const updated = db.prepare('SELECT * FROM files WHERE id = ?').get(fileId);
+    res.json({ success: true, file: updated });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * 9. Dispatch Download File to Telegram Chat
  */
 app.post('/api/files/:id/download', async (req, res) => {
   try {
@@ -315,7 +357,7 @@ app.post('/api/files/:id/download', async (req, res) => {
 });
 
 /**
- * 8. Toggle Star/Favorite
+ * 10. Toggle Star/Favorite
  */
 app.post('/api/files/:id/star', (req, res) => {
   try {
@@ -337,7 +379,7 @@ app.post('/api/files/:id/star', (req, res) => {
 });
 
 /**
- * 9. Delete File
+ * 11. Delete File
  */
 app.delete('/api/files/:id', (req, res) => {
   try {
@@ -352,7 +394,7 @@ app.delete('/api/files/:id', (req, res) => {
 });
 
 /**
- * 10. Customization Settings Endpoints
+ * 12. Customization Settings Endpoints
  */
 app.get('/api/settings', (req, res) => {
   try {

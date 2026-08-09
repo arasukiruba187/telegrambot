@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedCategory: 'all',
     dateFilter: 'all',
     sortBy: 'newest',
-    selectedFile: null
+    selectedFile: null,
+    contextTarget: null // { type: 'folder' | 'file', item: object }
   };
 
   // DOM Elements Map
@@ -58,6 +59,17 @@ document.addEventListener('DOMContentLoaded', () => {
     optionUploadPhoto: document.getElementById('option-upload-photo'),
     optionUploadVideo: document.getElementById('option-upload-video'),
     hiddenFileInput: document.getElementById('hidden-file-input'),
+
+    sheetItemContext: document.getElementById('sheet-item-context'),
+    contextItemTitle: document.getElementById('context-item-title'),
+    contextItemSubtitle: document.getElementById('context-item-subtitle'),
+    contextOptionRename: document.getElementById('context-option-rename'),
+    contextOptionDelete: document.getElementById('context-option-delete'),
+
+    modalRenameItem: document.getElementById('modal-rename-item'),
+    inputRenameName: document.getElementById('input-rename-name'),
+    btnCancelRename: document.getElementById('btn-cancel-rename'),
+    btnConfirmRename: document.getElementById('btn-confirm-rename'),
 
     modalNewFolder: document.getElementById('modal-new-folder'),
     inputFolderName: document.getElementById('input-folder-name'),
@@ -162,6 +174,58 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Helper: Long Press (Hold) Event Detector
+  function addLongPressListener(element, onClickCallback, onLongPressCallback) {
+    let pressTimer = null;
+    let isLongPress = false;
+
+    const startPress = (e) => {
+      isLongPress = false;
+      pressTimer = setTimeout(() => {
+        isLongPress = true;
+        triggerHaptic('impact');
+        onLongPressCallback(e);
+      }, 450);
+    };
+
+    const cancelPress = () => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+    };
+
+    element.addEventListener('touchstart', startPress, { passive: true });
+    element.addEventListener('touchend', (e) => {
+      cancelPress();
+      if (!isLongPress && onClickCallback) onClickCallback(e);
+    });
+    element.addEventListener('touchmove', cancelPress, { passive: true });
+
+    element.addEventListener('mousedown', startPress);
+    element.addEventListener('mouseup', (e) => {
+      cancelPress();
+      if (!isLongPress && onClickCallback) onClickCallback(e);
+    });
+    element.addEventListener('mouseleave', cancelPress);
+  }
+
+  // Open Item Context Menu Sheet (Long-Press trigger)
+  function openContextMenu(type, item) {
+    state.contextTarget = { type, item };
+    elements.contextItemTitle.textContent = item.name;
+    elements.contextItemSubtitle.textContent = type === 'folder' ? 'Folder' : `${fileTypeLabel(item.mime_type, item.category)} • ${formatBytes(item.size)}`;
+
+    elements.sheetItemContext.classList.add('active');
+  }
+
+  function fileTypeLabel(mime, category) {
+    if (category === 'photo') return 'Photo';
+    if (category === 'video') return 'Video';
+    if (category === 'excel') return 'Spreadsheet';
+    return 'Document';
+  }
+
   // Switch View Tab (With Reset Folder Option)
   function switchTab(tabName, resetFolder = false) {
     triggerHaptic();
@@ -206,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Render Folders Grid on Home
+  // Render Folders Grid on Home with Long Press Listener
   function renderHomeFolders(folders) {
     elements.homeFoldersGrid.innerHTML = '';
     if (!folders || folders.length === 0) {
@@ -223,10 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="folder-pro-count">${folder.file_count || 0} files</div>
       `;
 
-      card.addEventListener('click', () => {
-        switchTab('files');
-        loadFolderContents(folder.id);
-      });
+      addLongPressListener(
+        card,
+        () => {
+          switchTab('files');
+          loadFolderContents(folder.id);
+        },
+        () => openContextMenu('folder', folder)
+      );
 
       elements.homeFoldersGrid.appendChild(card);
     });
@@ -270,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Render Explorer Folders & Files
+  // Render Explorer Folders & Files with Long-Press Handlers
   function renderFolderExplorer(folders, files) {
     elements.explorerFoldersContainer.innerHTML = '';
     elements.explorerFilesContainer.innerHTML = '';
@@ -284,9 +352,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="folder-pro-count">${folder.file_count || 0} files</div>
       `;
 
-      card.addEventListener('click', () => {
-        loadFolderContents(folder.id);
-      });
+      addLongPressListener(
+        card,
+        () => loadFolderContents(folder.id),
+        () => openContextMenu('folder', folder)
+      );
 
       elements.explorerFoldersContainer.appendChild(card);
     });
@@ -308,14 +378,18 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>
       `;
 
-      row.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-star')) {
-          e.stopPropagation();
-          toggleStarFile(file.id);
-        } else {
-          openFileDetailsSheet(file);
-        }
-      });
+      addLongPressListener(
+        row,
+        (e) => {
+          if (e.target.closest('.btn-star')) {
+            e.stopPropagation();
+            toggleStarFile(file.id);
+          } else {
+            openFileDetailsSheet(file);
+          }
+        },
+        () => openContextMenu('file', file)
+      );
 
       elements.explorerFilesContainer.appendChild(row);
     });
@@ -349,7 +423,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <svg viewBox="0 0 24 24" width="18" height="18" fill="#fbbf24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </button>
         `;
-        row.addEventListener('click', () => openFileDetailsSheet(file));
+        addLongPressListener(
+          row,
+          () => openFileDetailsSheet(file),
+          () => openContextMenu('file', file)
+        );
         elements.starredFilesList.appendChild(row);
       });
     } catch (err) {
@@ -393,7 +471,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
         `;
-        row.addEventListener('click', () => openFileDetailsSheet(file));
+        addLongPressListener(
+          row,
+          () => openFileDetailsSheet(file),
+          () => openContextMenu('file', file)
+        );
         elements.searchResultsList.appendChild(row);
       });
     } catch (err) {
@@ -414,6 +496,69 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.previewFileDate.textContent = `Uploaded ${formatDate(file.created_at)}`;
 
     elements.sheetFileDetails.classList.add('active');
+  }
+
+  // Rename Item Handler (Folder or File)
+  async function performRenameItem() {
+    if (!state.contextTarget) return;
+    const { type, item } = state.contextTarget;
+    const newName = elements.inputRenameName.value.trim();
+
+    if (!newName) {
+      showToast('Name cannot be empty', 'error');
+      return;
+    }
+
+    triggerHaptic('impact');
+    const endpoint = type === 'folder' ? `/api/folders/${item.id}` : `/api/files/${item.id}`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: state.user.id, name: newName })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(`✓ Renamed to "${newName}"`, 'success');
+        elements.modalRenameItem.classList.remove('active');
+        refreshCurrentView();
+      }
+    } catch (err) {
+      showToast('Error renaming item', 'error');
+    }
+  }
+
+  // Delete Item Handler (Folder or File)
+  async function performDeleteItem() {
+    if (!state.contextTarget) return;
+    const { type, item } = state.contextTarget;
+
+    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
+
+    triggerHaptic('impact');
+    const endpoint = type === 'folder' ? `/api/folders/${item.id}?user_id=${state.user.id}` : `/api/files/${item.id}?user_id=${state.user.id}`;
+
+    try {
+      const res = await fetch(endpoint, { method: 'DELETE' });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(`🗑 ${type === 'folder' ? 'Folder' : 'File'} deleted`, 'success');
+        elements.sheetItemContext.classList.remove('active');
+        refreshCurrentView();
+      }
+    } catch (err) {
+      showToast('Error deleting item', 'error');
+    }
+  }
+
+  function refreshCurrentView() {
+    if (state.currentTab === 'home') loadHomeOverview();
+    else if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
+    else if (state.currentTab === 'starred') loadStarredFiles();
+    else if (state.currentTab === 'search') triggerSearch();
   }
 
   // Download File to Telegram Chat
@@ -454,37 +599,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (data.success) {
         showToast(data.is_starred ? '⭐ Added to Favorites' : 'Removed from Favorites');
-        if (state.currentTab === 'home') loadHomeOverview();
-        else if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
-        else if (state.currentTab === 'starred') loadStarredFiles();
+        refreshCurrentView();
         if (elements.sheetFileDetails.classList.contains('active')) {
           elements.sheetFileDetails.classList.remove('active');
         }
       }
     } catch (err) {
       console.error(err);
-    }
-  }
-
-  // Delete File
-  async function deleteSelectedFile() {
-    if (!state.selectedFile) return;
-    if (!confirm(`Delete "${state.selectedFile.name}" permanently?`)) return;
-
-    triggerHaptic();
-    try {
-      const res = await fetch(`/api/files/${state.selectedFile.id}?user_id=${state.user.id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        showToast('🗑 File deleted', 'success');
-        elements.sheetFileDetails.classList.remove('active');
-        if (state.currentTab === 'home') loadHomeOverview();
-        else if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
-        else if (state.currentTab === 'starred') loadStarredFiles();
-        else if (state.currentTab === 'search') triggerSearch();
-      }
-    } catch (err) {
-      showToast('Failed to delete file', 'error');
     }
   }
 
@@ -514,8 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`📁 Folder "${name}" created`, 'success');
         elements.modalNewFolder.classList.remove('active');
         elements.inputFolderName.value = '';
-        if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
-        else loadHomeOverview();
+        refreshCurrentView();
       }
     } catch (err) {
       showToast('Error creating folder', 'error');
@@ -556,9 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
             triggerHaptic('success');
             showToast(`✓ "${file.name}" uploaded!`, 'success');
             elements.modalUploadProgress.classList.remove('active');
-
-            if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
-            else loadHomeOverview();
+            refreshCurrentView();
           } catch (err) {
             showToast('Upload failed', 'error');
             elements.modalUploadProgress.classList.remove('active');
@@ -611,6 +729,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.btnConfirmFolder.addEventListener('click', createFolder);
 
+    // Context Menu Handlers (Long-Press options)
+    elements.contextOptionRename.addEventListener('click', () => {
+      elements.sheetItemContext.classList.remove('active');
+      if (state.contextTarget) {
+        elements.inputRenameName.value = state.contextTarget.item.name;
+        elements.modalRenameItem.classList.add('active');
+        elements.inputRenameName.focus();
+      }
+    });
+
+    elements.contextOptionDelete.addEventListener('click', performDeleteItem);
+
+    elements.btnCancelRename.addEventListener('click', () => {
+      elements.modalRenameItem.classList.remove('active');
+    });
+
+    elements.btnConfirmRename.addEventListener('click', performRenameItem);
+
     elements.optionUploadFile.addEventListener('click', () => elements.hiddenFileInput.click());
     elements.optionUploadPhoto.addEventListener('click', () => elements.hiddenFileInput.click());
     elements.optionUploadVideo.addEventListener('click', () => elements.hiddenFileInput.click());
@@ -621,7 +757,12 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.btnToggleFavorite.addEventListener('click', () => {
       if (state.selectedFile) toggleStarFile(state.selectedFile.id);
     });
-    elements.btnDeleteFile.addEventListener('click', deleteSelectedFile);
+    elements.btnDeleteFile.addEventListener('click', () => {
+      if (state.selectedFile) {
+        state.contextTarget = { type: 'file', item: state.selectedFile };
+        performDeleteItem();
+      }
+    });
     elements.btnShareFile.addEventListener('click', () => showToast('🔗 Direct link copied!'));
 
     document.querySelectorAll('.sheet-backdrop').forEach(backdrop => {
