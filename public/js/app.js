@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
       first_name: tg?.initDataUnsafe?.user?.first_name || 'Arasu',
       username: tg?.initDataUnsafe?.user?.username || 'arasu'
     },
-    currentTab: 'home',
+    currentTab: 'files',
     currentFolderId: null,
     selectedCategory: 'all',
     dateFilter: 'all',
@@ -30,8 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements Map
   const elements = {
     userDisplayName: document.getElementById('user-display-name'),
-
-    homeFoldersGrid: document.getElementById('home-folders-grid'),
 
     breadcrumbsBar: document.getElementById('breadcrumbs-bar'),
     explorerFoldersContainer: document.getElementById('explorer-folders-container'),
@@ -51,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btnFabAdd: document.getElementById('btn-fab-add'),
     btnNewFolderHeader: document.getElementById('btn-new-folder-header'),
     btnNewFolderExplorer: document.getElementById('btn-new-folder-explorer'),
-    btnViewAllFolders: document.getElementById('btn-view-all-folders'),
 
     sheetCreateOptions: document.getElementById('sheet-create-options'),
     optionNewFolder: document.getElementById('option-new-folder'),
@@ -285,9 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeNavBtn = document.querySelector(`.nav-btn[data-tab="${tabName}"]`);
     if (activeNavBtn) activeNavBtn.classList.add('active');
 
-    if (tabName === 'home') {
-      loadHomeOverview();
-    } else if (tabName === 'files') {
+    if (tabName === 'files') {
       if (resetFolder) state.currentFolderId = null;
       loadFolderContents(state.currentFolderId);
     } else if (tabName === 'starred') {
@@ -298,56 +293,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // API Call: Fetch Home Folders
-  async function loadHomeOverview() {
-    try {
-      const userId = state.user.id;
-      elements.userDisplayName.textContent = state.user.first_name;
-
-      const folderRes = await fetch(`/api/folders?user_id=${userId}&parent_id=null`);
-      const folderData = await folderRes.json();
-
-      if (folderData.success) {
-        renderHomeFolders(folderData.folders);
-      }
-    } catch (err) {
-      console.error('Failed to load home overview:', err);
-    }
-  }
-
-  // Render Folders Grid on Home
-  function renderHomeFolders(folders) {
-    elements.homeFoldersGrid.innerHTML = '';
-    if (!folders || folders.length === 0) {
-      elements.homeFoldersGrid.innerHTML = '<div style="grid-column: span 2; padding: 24px; text-align: center; color: var(--text-muted);">No folders created. Use + button to upload files or create folders.</div>';
-      return;
-    }
-
-    folders.forEach(folder => {
-      const card = document.createElement('div');
-      card.className = 'folder-card-pro';
-      card.innerHTML = `
-        <svg viewBox="0 0 24 24" class="folder-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        <div class="folder-pro-name">${escapeHtml(folder.name)}</div>
-        <div class="folder-pro-count">${folder.file_count || 0} files</div>
-      `;
-
-      addLongPressListener(
-        card,
-        () => {
-          switchTab('files');
-          loadFolderContents(folder.id);
-        },
-        () => openContextMenu('folder', folder)
-      );
-
-      elements.homeFoldersGrid.appendChild(card);
-    });
-  }
-
-  // API Call: Fetch Folder Contents
+  // API Call: Fetch Folder Contents (Primary view)
   async function loadFolderContents(folderId = null) {
     try {
+      elements.userDisplayName.textContent = state.user.first_name;
       state.currentFolderId = folderId;
       const res = await fetch(`/api/folders?user_id=${state.user.id}&parent_id=${folderId}`);
       const data = await res.json();
@@ -389,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.explorerFilesContainer.innerHTML = '';
 
     if ((!folders || folders.length === 0) && (!files || files.length === 0)) {
-      elements.explorerFilesContainer.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">This folder is empty</div>';
+      elements.explorerFilesContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">Your vault is empty.<br>Tap the + button to upload files or folders.</div>';
       return;
     }
 
@@ -605,8 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function refreshCurrentView() {
-    if (state.currentTab === 'home') loadHomeOverview();
-    else if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
+    if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
     else if (state.currentTab === 'starred') loadStarredFiles();
     else if (state.currentTab === 'search') triggerSearch();
   }
@@ -867,8 +815,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.selectDateFilter.addEventListener('change', triggerSearch);
     elements.selectSortBy.addEventListener('change', triggerSearch);
-
-    elements.btnViewAllFolders.addEventListener('click', () => switchTab('files', true));
   }
 
   function escapeHtml(str) {
@@ -878,7 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function boot() {
     bindEvents();
-    loadHomeOverview();
+    loadFolderContents(null);
   }
 
   boot();
