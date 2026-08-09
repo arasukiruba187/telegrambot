@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentFolderId: null,
     selectedCategory: 'all',
     dateFilter: 'all',
-    sortBy: 'name', // Default sort: Ascending Name (A-Z)
+    sortBy: 'name',
     selectedFile: null,
     contextTarget: null
   };
@@ -82,11 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCancelUpload: document.getElementById('btn-cancel-upload'),
 
     sheetFileDetails: document.getElementById('sheet-file-details'),
+    previewMediaContainer: document.getElementById('preview-media-container'),
     previewFileIcon: document.getElementById('preview-file-icon'),
     previewFileName: document.getElementById('preview-file-name'),
     previewFileMeta: document.getElementById('preview-file-meta'),
     previewFileDate: document.getElementById('preview-file-date'),
     btnDownloadTelegram: document.getElementById('btn-download-telegram'),
+    btnRenamePreview: document.getElementById('btn-rename-preview'),
     btnToggleFavorite: document.getElementById('btn-toggle-favorite'),
     labelStarPreview: document.getElementById('label-star-preview'),
     btnShareFile: document.getElementById('btn-share-file'),
@@ -295,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // API Call: Fetch Folder Contents (Always Sorted Ascending A-Z)
+  // API Call: Fetch Folder Contents (Primary view)
   async function loadFolderContents(folderId = null) {
     try {
       elements.userDisplayName.textContent = state.user.first_name;
@@ -534,19 +536,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Open Preview Bottom Sheet
+  // Open Preview Bottom Sheet (Rich Media Preview: Image/Video/Doc)
   function openFileDetailsSheet(file) {
     triggerHaptic();
     state.selectedFile = file;
     const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
 
-    elements.previewFileIcon.className = `file-hero-icon ${iconInfo.class}`;
-    elements.previewFileIcon.innerHTML = iconInfo.svg;
     elements.previewFileName.textContent = file.name;
     elements.previewFileMeta.textContent = `${file.category.toUpperCase()} • ${formatBytes(file.size)}`;
     elements.previewFileDate.textContent = `Uploaded ${formatDate(file.created_at)}`;
 
+    elements.labelStarPreview.textContent = file.is_starred ? 'Favorited' : 'Favorite';
+
+    // Clear previous media preview
+    elements.previewMediaContainer.innerHTML = '';
+
+    const contentUrl = `/api/files/${file.id}/content`;
+
+    if (file.mime_type.startsWith('image/') || file.category === 'photo') {
+      const img = document.createElement('img');
+      img.className = 'preview-media-img';
+      img.src = contentUrl;
+      img.alt = file.name;
+      elements.previewMediaContainer.appendChild(img);
+    } else if (file.mime_type.startsWith('video/') || file.category === 'video') {
+      const video = document.createElement('video');
+      video.className = 'preview-media-video';
+      video.src = contentUrl;
+      video.controls = true;
+      video.playsInline = true;
+      elements.previewMediaContainer.appendChild(video);
+    } else {
+      // Document / PDF / Excel Icon Box
+      const heroIcon = document.createElement('div');
+      heroIcon.className = `file-hero-icon ${iconInfo.class}`;
+      heroIcon.innerHTML = iconInfo.svg;
+      elements.previewMediaContainer.appendChild(heroIcon);
+    }
+
     elements.sheetFileDetails.classList.add('active');
+  }
+
+  // Native OS Share Exact File (WhatsApp, Telegram, Facebook, Mail, etc.)
+  async function shareExactFile() {
+    if (!state.selectedFile) return;
+    const file = state.selectedFile;
+    triggerHaptic('impact');
+    const contentUrl = `${window.location.origin}/api/files/${file.id}/content`;
+
+    try {
+      showToast('⏳ Fetching file for native sharing...', 'info');
+      const response = await fetch(contentUrl);
+      const blob = await response.blob();
+      const fileToShare = new File([blob], file.name, { type: file.mime_type || blob.type });
+
+      if (navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
+        await navigator.share({
+          files: [fileToShare],
+          title: file.name,
+          text: `Sharing document: ${file.name}`
+        });
+        showToast('✓ Shared successfully!', 'success');
+        return;
+      }
+
+      if (navigator.share) {
+        await navigator.share({
+          title: file.name,
+          url: contentUrl
+        });
+        showToast('✓ Shared link via native OS!', 'success');
+      } else {
+        await navigator.clipboard.writeText(contentUrl);
+        showToast('🔗 Direct file link copied to clipboard!', 'success');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        showToast('Sharing cancelled or unavailable', 'error');
+      }
+    }
   }
 
   // Rename Item Handler (Folder or File)
@@ -574,6 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.success) {
         showToast(`✓ Renamed to "${newName}"`, 'success');
         elements.modalRenameItem.classList.remove('active');
+        elements.sheetFileDetails.classList.remove('active');
         refreshCurrentView();
       }
     } catch (err) {
@@ -598,6 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.success) {
         showToast(`🗑 ${type === 'folder' ? 'Folder' : 'File'} deleted`, 'success');
         elements.sheetItemContext.classList.remove('active');
+        elements.sheetFileDetails.classList.remove('active');
         refreshCurrentView();
       }
     } catch (err) {
@@ -923,17 +993,31 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.hiddenFileInput.addEventListener('change', (e) => handleBulkUpload(e.target.files));
     elements.hiddenFolderInput.addEventListener('change', (e) => handleBulkUpload(e.target.files));
 
+    // File Preview Action Sheet Handlers
     elements.btnDownloadTelegram.addEventListener('click', downloadFileToTelegram);
+    elements.btnShareFile.addEventListener('click', shareExactFile);
+
+    if (elements.btnRenamePreview) {
+      elements.btnRenamePreview.addEventListener('click', () => {
+        if (state.selectedFile) {
+          state.contextTarget = { type: 'file', item: state.selectedFile };
+          elements.inputRenameName.value = state.selectedFile.name;
+          elements.modalRenameItem.classList.add('active');
+          elements.inputRenameName.focus();
+        }
+      });
+    }
+
     elements.btnToggleFavorite.addEventListener('click', () => {
       if (state.selectedFile) toggleStarFile(state.selectedFile.id);
     });
+
     elements.btnDeleteFile.addEventListener('click', () => {
       if (state.selectedFile) {
         state.contextTarget = { type: 'file', item: state.selectedFile };
         performDeleteItem();
       }
     });
-    elements.btnShareFile.addEventListener('click', () => showToast('🔗 Direct link copied!'));
 
     document.querySelectorAll('.sheet-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', (e) => {

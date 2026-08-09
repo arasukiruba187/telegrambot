@@ -529,6 +529,8 @@ body.pro-theme {
   max-width: 480px;
   padding: 20px;
   animation: slideUp 0.25s var(--ease-smooth);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -613,91 +615,32 @@ body.pro-theme {
   margin-top: 2px;
 }
 
-/* Center Dialog */
-.center-dialog-card {
-  background: #111726;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-xl);
-  width: 90%;
-  max-width: 380px;
-  padding: 24px;
-  margin: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.dialog-icon-badge {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--blue-gradient);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 12px auto;
-}
-
-.center-dialog-card h2 {
-  font-family: var(--font-heading);
+/* File Preview Sheet & Rich Media Styles */
+.preview-media-box {
+  margin-bottom: 12px;
   text-align: center;
-  font-size: 18px;
-  font-weight: 700;
 }
 
-.dialog-input-group {
-  margin: 16px 0;
+.preview-media-img {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  object-fit: contain;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.dialog-input-group label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
-.dialog-input-group input {
+.preview-media-video {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
+  max-height: 240px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: 14px;
-  outline: none;
+  background: #000;
 }
 
-.dialog-btns {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-primary {
-  flex: 1;
-  background: var(--blue-gradient);
-  border: none;
-  color: #fff;
-  font-weight: 600;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.btn-cancel {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-/* File Preview Sheet */
 .file-hero-box {
   text-align: center;
-  padding: 16px 0;
+  padding: 8px 0;
 }
 
 .file-hero-icon {
@@ -713,8 +656,9 @@ body.pro-theme {
 }
 
 .file-hero-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
+  word-break: break-word;
 }
 
 .file-hero-meta {
@@ -753,24 +697,31 @@ body.pro-theme {
   margin-bottom: 12px;
 }
 
-.actions-pill-row {
-  display: flex;
-  gap: 8px;
+.actions-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 
 .action-pill {
-  flex: 1;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  padding: 10px;
+  padding: 12px;
   border-radius: var(--radius-md);
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .action-pill.danger {
@@ -778,96 +729,8 @@ body.pro-theme {
   border-color: rgba(239, 68, 68, 0.3);
 }
 
-/* Upload Progress Modal */
-.upload-card {
-  text-align: center;
-}
-
-.spinner-wrapper {
-  position: relative;
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 14px auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.progress-val {
-  position: absolute;
-  font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: 18px;
-  color: var(--blue-primary);
-}
-
-.upload-title {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.upload-filename {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-
-.upload-metrics {
-  display: block;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 8px 0 16px 0;
-}
-
-/* LAPTOP DRAG & DROP OVERLAY */
-.drag-drop-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(11, 15, 25, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 9999;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  border: 3px dashed var(--blue-primary);
-}
-
-.drag-drop-overlay.active {
-  display: flex;
-}
-
-.drag-drop-box {
-  text-align: center;
-  color: var(--text-primary);
-}
-
-.drag-drop-icon {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--blue-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px auto;
-  box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
-}
-
-.drag-drop-box h2 {
-  font-family: var(--font-heading);
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.drag-drop-box p {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: 6px;
+.action-pill.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
 }
 
 /* Toast Container */

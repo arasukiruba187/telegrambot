@@ -121,9 +121,9 @@
             <option value="month">This month</option>
           </select>
           <select id="select-sort-by" class="select-dropdown">
+            <option value="name">Sort by Name (A-Z)</option>
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
-            <option value="name">Sort by Name</option>
             <option value="size">Sort by Size</option>
           </select>
         </div>
@@ -310,13 +310,17 @@
     </div>
   </div>
 
-  <!-- 6. File Preview & Telegram Download Sheet -->
+  <!-- 6. File Preview & Action Bottom Sheet -->
   <div class="sheet-backdrop" id="sheet-file-details">
     <div class="bottom-sheet-card file-details-sheet">
       <div class="sheet-handle"></div>
+      
+      <!-- Media Preview Container (Image / Video / Hero Icon) -->
       <div class="file-hero-box">
-        <div class="file-hero-icon" id="preview-file-icon">
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div id="preview-media-container" class="preview-media-box">
+          <div class="file-hero-icon" id="preview-file-icon">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
         </div>
         <h2 class="file-hero-title" id="preview-file-name">Document.pdf</h2>
         <span class="file-hero-meta" id="preview-file-meta">PDF • 2.4 MB</span>
@@ -324,21 +328,29 @@
       </div>
 
       <div class="file-actions-group">
-        <!-- Direct Telegram Chat Download -->
+        <!-- 1. Send to Telegram Chat Button -->
         <button class="btn-download-telegram" id="btn-download-telegram">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          <span>↓ DOWNLOAD TO TELEGRAM CHAT</span>
+          <span>SEND TO TELEGRAM CHAT</span>
         </button>
 
-        <div class="actions-pill-row">
+        <!-- Action Pills Row: Share, Rename, Favorite, Delete -->
+        <div class="actions-pill-grid">
+          <button class="action-pill" id="btn-share-file" title="Share through WhatsApp, Telegram, Facebook, etc.">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span>Share</span>
+          </button>
+          
+          <button class="action-pill" id="btn-rename-preview" title="Rename file">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            <span>Rename</span>
+          </button>
+
           <button class="action-pill" id="btn-toggle-favorite">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span id="label-star-preview">Favorite</span>
           </button>
-          <button class="action-pill" id="btn-share-file">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            <span>Share</span>
-          </button>
+
           <button class="action-pill danger" id="btn-delete-file">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             <span>Delete</span>

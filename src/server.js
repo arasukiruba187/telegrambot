@@ -90,6 +90,30 @@ function getOrCreateFolderPath(userId, folderPathStr, baseParentId = null) {
 }
 
 /**
+ * Serve File Stream for Inline Media Previews & Native Sharing
+ */
+app.get('/api/files/:id/content', (req, res) => {
+  try {
+    const fileId = parseInt(req.params.id, 10);
+    const file = db.prepare('SELECT * FROM files WHERE id = ?').get(fileId);
+
+    if (!file) {
+      return res.status(404).send('File not found');
+    }
+
+    if (file.local_path && fs.existsSync(file.local_path)) {
+      res.setHeader('Content-Type', file.mime_type || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(file.name)}"`);
+      return fs.createReadStream(file.local_path).pipe(res);
+    }
+
+    res.status(404).send('File content unavailable');
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+/**
  * 1. Vault Overview Statistics
  */
 app.get('/api/vault', (req, res) => {
