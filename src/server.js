@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const { db, ensureUserSeeded } = require('./db');
+const db = require('./db');
 const { sendVaultFileToChat } = require('./bot');
 
 const app = express();
@@ -16,7 +16,7 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Multer Storage config
+// Multer Storage config for Bulk Uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
@@ -31,6 +31,16 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 const DEFAULT_USER_ID = 'arasu_default';
+
+/**
+ * Utility: Ensure User Exists
+ */
+function ensureUserExists(userId, firstName = 'Arasu') {
+  const existing = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+  if (!existing) {
+    db.prepare('INSERT INTO users (id, first_name, username) VALUES (?, ?, ?)').run(userId, firstName, 'arasu');
+  }
+}
 
 /**
  * Utility: Helper to build breadcrumbs path
@@ -49,12 +59,44 @@ function getBreadcrumbs(folderId, userId = DEFAULT_USER_ID) {
 }
 
 /**
+ * Helper: Find or Create Folder Path (For Folder Uploads)
+ * e.g., relativeFolderPath = "MyProject/Documents/Specs"
+ */
+function getOrCreateFolderPath(userId, folderPathStr, baseParentId = null) {
+  if (!folderPathStr || !folderPathStr.trim()) return baseParentId;
+
+  const parts = folderPathStr.split('/').filter(p => p.trim().length > 0);
+  let currentParentId = baseParentId;
+
+  for (const part of parts) {
+    let folder = db.prepare(`
+      SELECT id FROM folders 
+      WHERE user_id = ? AND name = ? AND (
+        (? IS NULL AND parent_id IS NULL) OR (parent_id = ?)
+      )
+    `).get(userId, part, currentParentId, currentParentId);
+
+    if (!folder) {
+      const info = db.prepare(`
+        INSERT INTO folders (user_id, parent_id, name, icon, is_private)
+        VALUES (?, ?, ?, 'folder', 0)
+      `).run(userId, currentParentId, part);
+      currentParentId = info.lastInsertRowid;
+    } else {
+      currentParentId = folder.id;
+    }
+  }
+
+  return currentParentId;
+}
+
+/**
  * 1. Vault Overview Statistics
  */
 app.get('/api/vault', (req, res) => {
   try {
     const userId = req.query.user_id || DEFAULT_USER_ID;
-    ensureUserSeeded(userId, req.query.first_name || 'Arasu');
+    ensureUserExists(userId, req.query.first_name || 'Arasu');
 
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) || { first_name: 'Arasu', username: 'arasu' };
 
@@ -101,7 +143,7 @@ app.get('/api/vault', (req, res) => {
 app.get('/api/folders', (req, res) => {
   try {
     const userId = req.query.user_id || DEFAULT_USER_ID;
-    ensureUserSeeded(userId);
+    ensureUserExists(userId);
 
     const parentId = req.query.parent_id && req.query.parent_id !== 'null' ? parseInt(req.query.parent_id, 10) : null;
 
@@ -144,7 +186,7 @@ app.get('/api/folders', (req, res) => {
 app.post('/api/folders', (req, res) => {
   try {
     const userId = req.body.user_id || DEFAULT_USER_ID;
-    ensureUserSeeded(userId);
+    ensureUserExists(userId);
     const { name, parent_id, icon } = req.body;
 
     if (!name || !name.trim()) {
@@ -209,7 +251,7 @@ app.delete('/api/folders/:id', (req, res) => {
 app.get('/api/files', (req, res) => {
   try {
     const userId = req.query.user_id || DEFAULT_USER_ID;
-    ensureUserSeeded(userId);
+    ensureUserExists(userId);
 
     const query = req.query.query ? req.query.query.trim().toLowerCase() : null;
     const category = req.query.category || 'all';
@@ -272,42 +314,66 @@ app.get('/api/files', (req, res) => {
 });
 
 /**
- * 7. File Upload Endpoint
+ * 7. Bulk Files & Folder Upload Endpoint
  */
-app.post('/api/files/upload', upload.single('file'), (req, res) => {
+app.post('/api/files/upload', upload.array('files', 100), (req, res) => {
   try {
     const userId = req.body.user_id || DEFAULT_USER_ID;
-    ensureUserSeeded(userId);
-    const folderId = req.body.folder_id && req.body.folder_id !== 'null' ? parseInt(req.body.folder_id, 10) : null;
+    ensureUserExists(userId);
+    const baseFolderId = req.body.folder_id && req.body.folder_id !== 'null' ? parseInt(req.body.folder_id, 10) : null;
 
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'No file was uploaded' });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, error: 'No files uploaded' });
     }
 
-    const fileName = req.file.originalname;
-    const fileSize = req.file.size;
-    const mimeType = req.file.mimetype;
-    const localPath = req.file.path;
+    let relativePaths = [];
+    if (req.body.relative_paths) {
+      try {
+        relativePaths = typeof req.body.relative_paths === 'string' ? JSON.parse(req.body.relative_paths) : req.body.relative_paths;
+      } catch (e) {
+        relativePaths = [];
+      }
+    }
 
-    let category = 'document';
-    if (mimeType.startsWith('image/')) category = 'photo';
-    else if (mimeType.startsWith('video/')) category = 'video';
-    else if (mimeType.includes('spreadsheet') || mimeType.includes('excel') || fileName.endsWith('.xlsx') || fileName.endsWith('.csv')) category = 'excel';
-    else if (mimeType.includes('zip') || mimeType.includes('compressed') || fileName.endsWith('.zip') || fileName.endsWith('.rar')) category = 'archive';
+    const uploadedFiles = [];
 
-    const telegramFileId = `file_vault_${Date.now()}`;
     const stmt = db.prepare(`
       INSERT INTO files (user_id, folder_id, name, size, mime_type, category, telegram_file_id, local_path, is_starred, is_private)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
     `);
-    const info = stmt.run(userId, folderId, fileName, fileSize, mimeType, category, telegramFileId, localPath);
 
-    const newFile = db.prepare('SELECT * FROM files WHERE id = ?').get(info.lastInsertRowid);
+    req.files.forEach((file, index) => {
+      const fileName = file.originalname;
+      const fileSize = file.size;
+      const mimeType = file.mimetype;
+      const localPath = file.path;
+
+      let targetFolderId = baseFolderId;
+
+      // Check if file has relative path (folder upload)
+      const relPath = relativePaths[index];
+      if (relPath && relPath.includes('/')) {
+        const folderDir = relPath.substring(0, relPath.lastIndexOf('/'));
+        targetFolderId = getOrCreateFolderPath(userId, folderDir, baseFolderId);
+      }
+
+      let category = 'document';
+      if (mimeType.startsWith('image/')) category = 'photo';
+      else if (mimeType.startsWith('video/')) category = 'video';
+      else if (mimeType.includes('spreadsheet') || mimeType.includes('excel') || fileName.endsWith('.xlsx') || fileName.endsWith('.csv')) category = 'excel';
+      else if (mimeType.includes('zip') || mimeType.includes('compressed') || fileName.endsWith('.zip') || fileName.endsWith('.rar')) category = 'archive';
+
+      const telegramFileId = `file_vault_${Date.now()}_${index}`;
+      const info = stmt.run(userId, targetFolderId, fileName, fileSize, mimeType, category, telegramFileId, localPath);
+
+      const inserted = db.prepare('SELECT * FROM files WHERE id = ?').get(info.lastInsertRowid);
+      uploadedFiles.push(inserted);
+    });
 
     res.json({
       success: true,
-      message: 'File uploaded successfully',
-      file: newFile
+      count: uploadedFiles.length,
+      files: uploadedFiles
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

@@ -56,9 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     sheetCreateOptions: document.getElementById('sheet-create-options'),
     optionNewFolder: document.getElementById('option-new-folder'),
     optionUploadFile: document.getElementById('option-upload-file'),
-    optionUploadPhoto: document.getElementById('option-upload-photo'),
-    optionUploadVideo: document.getElementById('option-upload-video'),
+    optionUploadFolder: document.getElementById('option-upload-folder'),
     hiddenFileInput: document.getElementById('hidden-file-input'),
+    hiddenFolderInput: document.getElementById('hidden-folder-input'),
 
     sheetItemContext: document.getElementById('sheet-item-context'),
     contextItemTitle: document.getElementById('context-item-title'),
@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnConfirmFolder: document.getElementById('btn-confirm-folder'),
 
     modalUploadProgress: document.getElementById('modal-upload-progress'),
+    uploadStatusTitle: document.getElementById('upload-status-title'),
     uploadPercentText: document.getElementById('upload-percent-text'),
     uploadFilenameText: document.getElementById('upload-filename-text'),
     uploadBytesText: document.getElementById('upload-bytes-text'),
@@ -206,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const deltaX = Math.abs(touch.clientX - startX);
       const deltaY = Math.abs(touch.clientY - startY);
 
-      // If user moved finger more than 8 pixels, user is SCROLLING! Cancel long press timer.
       if (deltaX > 8 || deltaY > 8) {
         isScrolling = true;
         if (pressTimer) {
@@ -222,18 +222,15 @@ document.addEventListener('DOMContentLoaded', () => {
         pressTimer = null;
       }
 
-      // Only trigger click if user did NOT scroll and it was NOT a long press
       if (!isScrolling && !isLongPress && onClickCallback) {
         onClickCallback(e);
       }
     };
 
-    // Attach Touch Listeners for Mobile Safari / Chrome
     element.addEventListener('touchstart', startTouch, { passive: true });
     element.addEventListener('touchmove', moveTouch, { passive: true });
     element.addEventListener('touchend', endTouch);
 
-    // Mouse Fallback for Desktop Web
     element.addEventListener('mousedown', (e) => {
       startX = e.clientX;
       startY = e.clientY;
@@ -322,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderHomeFolders(folders) {
     elements.homeFoldersGrid.innerHTML = '';
     if (!folders || folders.length === 0) {
-      elements.homeFoldersGrid.innerHTML = '<div style="grid-column: span 2; padding: 24px; text-align: center; color: var(--text-muted);">No folders created</div>';
+      elements.homeFoldersGrid.innerHTML = '<div style="grid-column: span 2; padding: 24px; text-align: center; color: var(--text-muted);">No folders created. Use + button to upload files or create folders.</div>';
       return;
     }
 
@@ -390,6 +387,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderFolderExplorer(folders, files) {
     elements.explorerFoldersContainer.innerHTML = '';
     elements.explorerFilesContainer.innerHTML = '';
+
+    if ((!folders || folders.length === 0) && (!files || files.length === 0)) {
+      elements.explorerFilesContainer.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">This folder is empty</div>';
+      return;
+    }
 
     folders.forEach(folder => {
       const card = document.createElement('div');
@@ -690,48 +692,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // File Upload
-  function handleFileUpload(fileList) {
+  // Bulk File & Folder Upload Handler
+  async function handleBulkUpload(fileList) {
     if (!fileList || fileList.length === 0) return;
-    const file = fileList[0];
+    const filesArray = Array.from(fileList);
     elements.sheetCreateOptions.classList.remove('active');
 
     elements.modalUploadProgress.classList.add('active');
-    elements.uploadFilenameText.textContent = file.name;
-    elements.uploadBytesText.textContent = `0 MB / ${formatBytes(file.size)}`;
+    const totalFiles = filesArray.length;
+    let totalBytes = filesArray.reduce((acc, f) => acc + f.size, 0);
+
+    elements.uploadStatusTitle.textContent = `Uploading ${totalFiles} item${totalFiles > 1 ? 's' : ''}...`;
+    elements.uploadFilenameText.textContent = filesArray[0].webkitRelativePath || filesArray[0].name;
+    elements.uploadBytesText.textContent = `0 MB / ${formatBytes(totalBytes)}`;
     elements.uploadPercentText.textContent = '0%';
 
     let progress = 0;
     const interval = setInterval(() => {
-      progress += Math.floor(Math.random() * 15) + 12;
-      if (progress > 100) progress = 100;
+      progress += Math.floor(Math.random() * 15) + 10;
+      if (progress > 95) progress = 95;
 
       const offset = 226 - (226 * progress) / 100;
       elements.progressRingCircle.style.strokeDashoffset = offset;
       elements.uploadPercentText.textContent = `${progress}%`;
-      elements.uploadBytesText.textContent = `${formatBytes((file.size * progress) / 100)} / ${formatBytes(file.size)}`;
+      elements.uploadBytesText.textContent = `${formatBytes((totalBytes * progress) / 100)} / ${formatBytes(totalBytes)}`;
+    }, 150);
 
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(async () => {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('user_id', state.user.id);
-          formData.append('folder_id', state.currentFolderId || 'null');
+    try {
+      const formData = new FormData();
+      formData.append('user_id', state.user.id);
+      formData.append('folder_id', state.currentFolderId || 'null');
 
-          try {
-            await fetch('/api/files/upload', { method: 'POST', body: formData });
-            triggerHaptic('success');
-            showToast(`✓ "${file.name}" uploaded!`, 'success');
-            elements.modalUploadProgress.classList.remove('active');
-            refreshCurrentView();
-          } catch (err) {
-            showToast('Upload failed', 'error');
-            elements.modalUploadProgress.classList.remove('active');
-          }
-        }, 300);
-      }
-    }, 120);
+      const relativePaths = [];
+      filesArray.forEach((file) => {
+        formData.append('files', file);
+        relativePaths.push(file.webkitRelativePath || file.name);
+      });
+      formData.append('relative_paths', JSON.stringify(relativePaths));
+
+      const res = await fetch('/api/files/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      clearInterval(interval);
+      elements.progressRingCircle.style.strokeDashoffset = 0;
+      elements.uploadPercentText.textContent = '100%';
+
+      setTimeout(() => {
+        elements.modalUploadProgress.classList.remove('active');
+        if (data.success) {
+          triggerHaptic('success');
+          showToast(`✓ Uploaded ${data.count} items successfully!`, 'success');
+          refreshCurrentView();
+        } else {
+          showToast(`❌ ${data.error || 'Upload failed'}`, 'error');
+        }
+      }, 300);
+    } catch (err) {
+      clearInterval(interval);
+      elements.modalUploadProgress.classList.remove('active');
+      showToast('Upload network error', 'error');
+    }
   }
 
   // Event Bindings
@@ -796,10 +816,10 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.btnConfirmRename.addEventListener('click', performRenameItem);
 
     elements.optionUploadFile.addEventListener('click', () => elements.hiddenFileInput.click());
-    elements.optionUploadPhoto.addEventListener('click', () => elements.hiddenFileInput.click());
-    elements.optionUploadVideo.addEventListener('click', () => elements.hiddenFileInput.click());
+    elements.optionUploadFolder.addEventListener('click', () => elements.hiddenFolderInput.click());
 
-    elements.hiddenFileInput.addEventListener('change', (e) => handleFileUpload(e.target.files));
+    elements.hiddenFileInput.addEventListener('change', (e) => handleBulkUpload(e.target.files));
+    elements.hiddenFolderInput.addEventListener('change', (e) => handleBulkUpload(e.target.files));
 
     elements.btnDownloadTelegram.addEventListener('click', downloadFileToTelegram);
     elements.btnToggleFavorite.addEventListener('click', () => {
