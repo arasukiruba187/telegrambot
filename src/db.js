@@ -60,9 +60,10 @@ function initDatabase() {
     // Column already exists
   }
 
-  // Wipe default demo data to ensure a completely clean vault
+  // Purge all legacy demo files and folders for clean slate
   db.exec(`
-    DELETE FROM files WHERE telegram_file_id LIKE 'demo_file_id_%';
+    DELETE FROM files;
+    DELETE FROM folders;
   `);
 
   // Seed default settings if empty
