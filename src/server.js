@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
-const db = require('./db');
+const { db, ensureUserSeeded } = require('./db');
 const { sendVaultFileToChat } = require('./bot');
 
 const app = express();
@@ -36,7 +36,7 @@ const DEFAULT_USER_ID = 'arasu_default';
  * Utility: Helper to build breadcrumbs path
  */
 function getBreadcrumbs(folderId, userId = DEFAULT_USER_ID) {
-  const crumbs = [{ id: null, name: 'My Vault' }];
+  const crumbs = [{ id: null, name: 'Vault' }];
   let currentId = folderId ? Number(folderId) : null;
 
   while (currentId) {
@@ -54,6 +54,8 @@ function getBreadcrumbs(folderId, userId = DEFAULT_USER_ID) {
 app.get('/api/vault', (req, res) => {
   try {
     const userId = req.query.user_id || DEFAULT_USER_ID;
+    ensureUserSeeded(userId, req.query.first_name || 'Arasu');
+
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) || { first_name: 'Arasu', username: 'arasu' };
 
     const totalUsed = db.prepare('SELECT SUM(size) as total FROM files WHERE user_id = ?').get(userId).total || 0;
@@ -71,15 +73,13 @@ app.get('/api/vault', (req, res) => {
       ORDER BY f.created_at DESC LIMIT 5
     `).all(userId);
 
-    const hasPin = user.pin_hash ? 1 : 0;
-
     res.json({
       success: true,
       user: {
         id: user.id,
         first_name: user.first_name,
         username: user.username,
-        has_pin: hasPin
+        has_pin: 0
       },
       stats: {
         used_bytes: totalUsed,
@@ -101,6 +101,8 @@ app.get('/api/vault', (req, res) => {
 app.get('/api/folders', (req, res) => {
   try {
     const userId = req.query.user_id || DEFAULT_USER_ID;
+    ensureUserSeeded(userId);
+
     const parentId = req.query.parent_id && req.query.parent_id !== 'null' ? parseInt(req.query.parent_id, 10) : null;
 
     const folders = db.prepare(`
@@ -142,7 +144,8 @@ app.get('/api/folders', (req, res) => {
 app.post('/api/folders', (req, res) => {
   try {
     const userId = req.body.user_id || DEFAULT_USER_ID;
-    const { name, parent_id, icon, is_private } = req.body;
+    ensureUserSeeded(userId);
+    const { name, parent_id, icon } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, error: 'Folder name is required' });
@@ -150,13 +153,12 @@ app.post('/api/folders', (req, res) => {
 
     const pId = parent_id && parent_id !== 'null' ? parseInt(parent_id, 10) : null;
     const iconName = icon || 'folder';
-    const privFlag = is_private ? 1 : 0;
 
     const stmt = db.prepare(`
       INSERT INTO folders (user_id, parent_id, name, icon, is_private)
-      VALUES (?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, 0)
     `);
-    const info = stmt.run(userId, pId, name.trim(), iconName, privFlag);
+    const info = stmt.run(userId, pId, name.trim(), iconName);
 
     const newFolder = db.prepare('SELECT * FROM folders WHERE id = ?').get(info.lastInsertRowid);
     res.json({ success: true, folder: newFolder });
@@ -186,6 +188,8 @@ app.delete('/api/folders/:id', (req, res) => {
 app.get('/api/files', (req, res) => {
   try {
     const userId = req.query.user_id || DEFAULT_USER_ID;
+    ensureUserSeeded(userId);
+
     const query = req.query.query ? req.query.query.trim().toLowerCase() : null;
     const category = req.query.category || 'all';
     const starredOnly = req.query.starred === '1';
@@ -200,24 +204,20 @@ app.get('/api/files', (req, res) => {
     `;
     const params = [userId];
 
-    // Search query filter (searches entire vault)
     if (query) {
       sql += ` AND LOWER(f.name) LIKE ?`;
       params.push(`%${query}%`);
     }
 
-    // Category filter
     if (category !== 'all') {
       sql += ` AND f.category = ?`;
       params.push(category);
     }
 
-    // Starred filter
     if (starredOnly) {
       sql += ` AND f.is_starred = 1`;
     }
 
-    // Date filter
     const now = new Date();
     if (dateFilter === 'today') {
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
@@ -233,7 +233,6 @@ app.get('/api/files', (req, res) => {
       params.push(monthAgo);
     }
 
-    // Sorting
     if (sortBy === 'newest') sql += ` ORDER BY f.created_at DESC`;
     else if (sortBy === 'oldest') sql += ` ORDER BY f.created_at ASC`;
     else if (sortBy === 'name') sql += ` ORDER BY f.name ASC`;
@@ -257,8 +256,8 @@ app.get('/api/files', (req, res) => {
 app.post('/api/files/upload', upload.single('file'), (req, res) => {
   try {
     const userId = req.body.user_id || DEFAULT_USER_ID;
+    ensureUserSeeded(userId);
     const folderId = req.body.folder_id && req.body.folder_id !== 'null' ? parseInt(req.body.folder_id, 10) : null;
-    const isPrivate = req.body.is_private === '1' ? 1 : 0;
 
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file was uploaded' });
@@ -269,20 +268,18 @@ app.post('/api/files/upload', upload.single('file'), (req, res) => {
     const mimeType = req.file.mimetype;
     const localPath = req.file.path;
 
-    // Detect category
     let category = 'document';
     if (mimeType.startsWith('image/')) category = 'photo';
     else if (mimeType.startsWith('video/')) category = 'video';
     else if (mimeType.includes('spreadsheet') || mimeType.includes('excel') || fileName.endsWith('.xlsx') || fileName.endsWith('.csv')) category = 'excel';
     else if (mimeType.includes('zip') || mimeType.includes('compressed') || fileName.endsWith('.zip') || fileName.endsWith('.rar')) category = 'archive';
 
-    // Save metadata in SQLite
     const telegramFileId = `file_vault_${Date.now()}`;
     const stmt = db.prepare(`
       INSERT INTO files (user_id, folder_id, name, size, mime_type, category, telegram_file_id, local_path, is_starred, is_private)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
     `);
-    const info = stmt.run(userId, folderId, fileName, fileSize, mimeType, category, telegramFileId, localPath, isPrivate);
+    const info = stmt.run(userId, folderId, fileName, fileSize, mimeType, category, telegramFileId, localPath);
 
     const newFile = db.prepare('SELECT * FROM files WHERE id = ?').get(info.lastInsertRowid);
 
@@ -355,46 +352,7 @@ app.delete('/api/files/:id', (req, res) => {
 });
 
 /**
- * 10. Security PIN Lock Endpoints
- */
-app.post('/api/pin/setup', (req, res) => {
-  try {
-    const userId = req.body.user_id || DEFAULT_USER_ID;
-    const { pin } = req.body;
-
-    if (!pin || pin.length !== 4) {
-      return res.status(400).json({ success: false, error: 'PIN must be 4 digits' });
-    }
-
-    db.prepare('UPDATE users SET pin_hash = ? WHERE id = ?').run(pin, userId);
-    res.json({ success: true, message: 'PIN lock enabled successfully' });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-app.post('/api/pin/verify', (req, res) => {
-  try {
-    const userId = req.body.user_id || DEFAULT_USER_ID;
-    const { pin } = req.body;
-
-    const user = db.prepare('SELECT pin_hash FROM users WHERE id = ?').get(userId);
-    if (!user || !user.pin_hash) {
-      return res.json({ success: true, verified: true }); // No PIN required
-    }
-
-    if (user.pin_hash === pin) {
-      return res.json({ success: true, verified: true });
-    } else {
-      return res.status(401).json({ success: false, verified: false, error: 'Invalid 4-digit PIN' });
-    }
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-/**
- * 11. Customization Settings Endpoints
+ * 10. Customization Settings Endpoints
  */
 app.get('/api/settings', (req, res) => {
   try {
@@ -409,13 +367,12 @@ app.get('/api/settings', (req, res) => {
 
 app.post('/api/settings', (req, res) => {
   try {
-    const { app_name, storage_limit_bytes, accent_color, require_pin } = req.body;
+    const { app_name, storage_limit_bytes, accent_color } = req.body;
     const upsert = db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
 
     if (app_name) upsert.run('app_name', app_name);
     if (storage_limit_bytes) upsert.run('storage_limit_bytes', String(storage_limit_bytes));
     if (accent_color) upsert.run('accent_color', accent_color);
-    if (require_pin !== undefined) upsert.run('require_pin', String(require_pin ? 1 : 0));
 
     res.json({ success: true, message: 'Settings updated' });
   } catch (err) {

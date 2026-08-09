@@ -54,7 +54,6 @@ function initDatabase() {
     );
   `);
 
-  // Ensure local_path column exists if migrating existing db
   try {
     db.exec(`ALTER TABLE files ADD COLUMN local_path TEXT DEFAULT NULL;`);
   } catch (e) {
@@ -72,17 +71,17 @@ function initDatabase() {
   }
 
   // Seed sample data for default user if empty
-  const defaultUserId = 'arasu_default';
-  const hasFolders = db.prepare('SELECT COUNT(*) as count FROM folders WHERE user_id = ?').get(defaultUserId).count > 0;
-  
-  if (!hasFolders) {
-    seedDefaultVault(defaultUserId);
-  }
+  ensureUserSeeded('arasu_default');
 }
 
-function seedDefaultVault(userId) {
+function ensureUserSeeded(userId, firstName = 'Arasu') {
+  if (!userId) return;
+  
   const insertUser = db.prepare('INSERT OR IGNORE INTO users (id, first_name, username) VALUES (?, ?, ?)');
-  insertUser.run(userId, 'Arasu', 'arasu');
+  insertUser.run(userId, firstName, 'arasu');
+
+  const hasFolders = db.prepare('SELECT COUNT(*) as count FROM folders WHERE user_id = ?').get(userId).count > 0;
+  if (hasFolders) return;
 
   const insertFolder = db.prepare(`
     INSERT INTO folders (user_id, parent_id, name, icon, is_private, created_at)
@@ -104,7 +103,7 @@ function seedDefaultVault(userId) {
   const projectFolder = insertFolder.run(userId, null, 'Projects', 'briefcase', 0, lastWeek).lastInsertRowid;
   const photoFolder = insertFolder.run(userId, null, 'Photos', 'image', 0, lastWeek).lastInsertRowid;
   const videoFolder = insertFolder.run(userId, null, 'Videos', 'video', 0, lastWeek).lastInsertRowid;
-  const certFolder = insertFolder.run(userId, null, 'Certificates', 'award', 1, lastWeek).lastInsertRowid;
+  const certFolder = insertFolder.run(userId, null, 'Certificates', 'award', 0, lastWeek).lastInsertRowid;
 
   // Subfolders under Documents
   const collegeDocFolder = insertFolder.run(userId, docFolder, 'College', 'graduation-cap', 0, lastWeek).lastInsertRowid;
@@ -117,7 +116,7 @@ function seedDefaultVault(userId) {
   // Root level sample files
   insertFile.run(userId, null, 'Resume.pdf', 2516582, 'application/pdf', 'document', 'demo_file_id_resume', 1, 0, tenMinsAgo);
   insertFile.run(userId, null, 'Project Report.xlsx', 5033164, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'excel', 'demo_file_id_project', 1, 0, yesterday);
-  insertFile.run(userId, null, 'Passport_Scan.pdf', 3145728, 'application/pdf', 'document', 'demo_file_id_passport', 0, 1, lastWeek);
+  insertFile.run(userId, null, 'Passport_Scan.pdf', 3145728, 'application/pdf', 'document', 'demo_file_id_passport', 0, 0, lastWeek);
 
   // Files in College Documents
   insertFile.run(userId, collegeDocFolder, 'Marksheet.pdf', 1258291, 'application/pdf', 'document', 'demo_file_id_marksheet', 1, 0, lastWeek);
@@ -142,4 +141,7 @@ function seedDefaultVault(userId) {
 // Run DB Initialization
 initDatabase();
 
-module.exports = db;
+module.exports = {
+  db,
+  ensureUserSeeded
+};

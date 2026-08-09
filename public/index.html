@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Lucide Icons -->
+  <!-- Lucide Icons CDN Fallback -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
   <!-- Telegram WebApp SDK -->
@@ -29,7 +29,9 @@
     <!-- Header -->
     <header class="app-header">
       <div class="header-brand">
-        <div class="brand-logo"><i data-lucide="cloud-lightning"></i></div>
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+        </div>
         <div class="brand-text">
           <span id="app-title-text" class="brand-name">VAULT</span>
           <span class="brand-subtitle">Cloud Storage</span>
@@ -37,7 +39,7 @@
       </div>
       <div class="header-actions">
         <button class="header-icon-btn" id="btn-open-settings" title="Settings">
-          <i data-lucide="sliders"></i>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
         </button>
       </div>
     </header>
@@ -57,7 +59,7 @@
 
         <!-- Quick Search Bar -->
         <div class="search-bar-trigger" id="home-search-trigger">
-          <i data-lucide="search" class="search-bar-icon"></i>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="search-bar-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span class="search-bar-text">Search documents, folders, files...</span>
         </div>
 
@@ -65,7 +67,7 @@
         <div class="storage-gauge-card glass-card">
           <div class="gauge-header">
             <div class="gauge-title-group">
-              <i data-lucide="hard-drive" class="gauge-icon"></i>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="gauge-icon"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" y1="16" x2="6.01" y2="16"/><line x1="10" y1="16" x2="10.01" y2="16"/></svg>
               <span>STORAGE USAGE</span>
             </div>
             <span class="gauge-percent" id="storage-percent-label">64%</span>
@@ -84,19 +86,24 @@
         </div>
         <div class="category-chips-scroll">
           <button class="cat-chip-btn active" data-cat="all">
-            <i data-lucide="layers"></i> All
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            <span>All</span>
           </button>
           <button class="cat-chip-btn" data-cat="document">
-            <i data-lucide="file-text"></i> Documents
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span>Documents</span>
           </button>
           <button class="cat-chip-btn" data-cat="excel">
-            <i data-lucide="file-spreadsheet"></i> Excel
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="8 13 16 13"/><polyline points="8 17 16 17"/></svg>
+            <span>Excel</span>
           </button>
           <button class="cat-chip-btn" data-cat="photo">
-            <i data-lucide="image"></i> Photos
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Photos</span>
           </button>
           <button class="cat-chip-btn" data-cat="video">
-            <i data-lucide="video"></i> Videos
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>Videos</span>
           </button>
         </div>
 
@@ -112,7 +119,10 @@
       <section id="view-files" class="tab-view">
         <!-- Breadcrumb Navigation Bar -->
         <div class="breadcrumb-nav-container" id="breadcrumbs-bar">
-          <span class="crumb-pill active"><i data-lucide="hard-drive"></i> Vault</span>
+          <span class="crumb-pill active">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            <span>Vault</span>
+          </span>
         </div>
 
         <!-- Explorer Control Bar -->
@@ -120,7 +130,8 @@
           <span class="explorer-count-label" id="explorer-item-count">0 items</span>
           <div class="explorer-actions">
             <button class="btn-create-folder-pill" id="btn-new-folder-header">
-              <i data-lucide="folder-plus"></i> New Folder
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+              <span>New Folder</span>
             </button>
           </div>
         </div>
@@ -132,7 +143,7 @@
         <div id="explorer-files-container" class="explorer-files-list"></div>
       </section>
 
-      <!-- 3. FAVORITES / STARRED VIEW -->
+      <!-- 3. FAVORITES VIEW -->
       <section id="view-starred" class="tab-view">
         <div class="view-title-header">
           <h1 class="page-heading">⭐ Favorites</h1>
@@ -145,10 +156,10 @@
       <section id="view-search" class="tab-view">
         <!-- Search Input Box -->
         <div class="search-input-card glass-card">
-          <i data-lucide="search" class="search-card-icon"></i>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="search-card-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" id="search-input" placeholder="Search by file name or extension..." autocomplete="off">
           <button class="btn-clear-input" id="btn-clear-search" style="display:none;">
-            <i data-lucide="x"></i>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
@@ -189,28 +200,28 @@
       </section>
     </main>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation Bar (Inline Instant Visible SVGs) -->
     <nav class="bottom-nav-bar">
       <button class="nav-btn active" data-tab="home">
-        <i data-lucide="home"></i>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span>Home</span>
       </button>
       <button class="nav-btn" data-tab="files">
-        <i data-lucide="folder"></i>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2z"/></svg>
         <span>Files</span>
       </button>
 
       <!-- Center Floating Plus Button -->
       <button class="nav-fab-center" id="btn-fab-add" title="Upload or Create">
-        <i data-lucide="plus"></i>
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
 
       <button class="nav-btn" data-tab="starred">
-        <i data-lucide="star"></i>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <span>Favorites</span>
       </button>
       <button class="nav-btn" data-tab="search">
-        <i data-lucide="search"></i>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <span>Search</span>
       </button>
     </nav>
@@ -224,32 +235,42 @@
       <div class="sheet-indicator"></div>
       <div class="sheet-title-row">
         <h2>CREATE & UPLOAD</h2>
-        <button class="sheet-close-btn"><i data-lucide="x"></i></button>
+        <button class="sheet-close-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       <div class="sheet-menu-grid">
         <button class="sheet-menu-item" id="option-new-folder">
-          <div class="menu-item-icon icon-purple"><i data-lucide="folder-plus"></i></div>
+          <div class="menu-item-icon icon-purple">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          </div>
           <div class="menu-item-text">
             <h3>New Folder</h3>
             <p>Create a directory to organize files</p>
           </div>
         </button>
         <button class="sheet-menu-item" id="option-upload-file">
-          <div class="menu-item-icon icon-cyan"><i data-lucide="file-up"></i></div>
+          <div class="menu-item-icon icon-cyan">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+          </div>
           <div class="menu-item-text">
             <h3>Upload Documents</h3>
             <p>PDF, Word, Excel, ZIP or text files</p>
           </div>
         </button>
         <button class="sheet-menu-item" id="option-upload-photo">
-          <div class="menu-item-icon icon-emerald"><i data-lucide="image"></i></div>
+          <div class="menu-item-icon icon-emerald">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
           <div class="menu-item-text">
             <h3>Upload Images</h3>
             <p>PNG, JPG, SVG or RAW photos</p>
           </div>
         </button>
         <button class="sheet-menu-item" id="option-upload-video">
-          <div class="menu-item-icon icon-amber"><i data-lucide="video"></i></div>
+          <div class="menu-item-icon icon-amber">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          </div>
           <div class="menu-item-text">
             <h3>Upload Videos</h3>
             <p>MP4, MOV or media recordings</p>
@@ -260,11 +281,13 @@
     </div>
   </div>
 
-  <!-- 2. New Folder Simple Modal (No Password!) -->
+  <!-- 2. New Folder Simple Modal -->
   <div class="sheet-backdrop" id="modal-new-folder">
     <div class="center-dialog-card">
       <div class="dialog-header">
-        <div class="dialog-icon-wrapper"><i data-lucide="folder-plus"></i></div>
+        <div class="dialog-icon-wrapper">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+        </div>
         <h2>New Folder</h2>
         <p>Enter a name for your new directory</p>
       </div>
@@ -309,7 +332,9 @@
     <div class="bottom-sheet-card file-preview-sheet">
       <div class="sheet-indicator"></div>
       <div class="file-hero-wrapper">
-        <div class="file-hero-icon" id="preview-file-icon"><i data-lucide="file-text"></i></div>
+        <div class="file-hero-icon" id="preview-file-icon">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
         <h2 class="file-hero-title" id="preview-file-name">Document.pdf</h2>
         <span class="file-hero-badge" id="preview-file-meta">PDF • 2.4 MB</span>
         <span class="file-hero-time" id="preview-file-date">Uploaded Aug 09, 2026</span>
@@ -318,21 +343,21 @@
       <div class="file-actions-stack">
         <!-- Direct Telegram Download Button -->
         <button class="btn-download-telegram" id="btn-download-telegram">
-          <i data-lucide="send"></i>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           <span>↓ DOWNLOAD TO TELEGRAM CHAT</span>
         </button>
 
         <div class="secondary-actions-grid">
           <button class="action-pill-btn" id="btn-toggle-favorite">
-            <i data-lucide="star" id="icon-star-preview"></i>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span id="label-star-preview">Favorite</span>
           </button>
           <button class="action-pill-btn" id="btn-share-file">
-            <i data-lucide="share-2"></i>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
             <span>Share Link</span>
           </button>
           <button class="action-pill-btn danger" id="btn-delete-file">
-            <i data-lucide="trash-2"></i>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             <span>Delete</span>
           </button>
         </div>
@@ -340,11 +365,13 @@
     </div>
   </div>
 
-  <!-- 5. Settings Modal (Simplified) -->
+  <!-- 5. Settings Modal -->
   <div class="sheet-backdrop" id="modal-settings">
     <div class="center-dialog-card">
       <div class="dialog-header">
-        <div class="dialog-icon-wrapper"><i data-lucide="sliders"></i></div>
+        <div class="dialog-icon-wrapper">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </div>
         <h2>Vault Preferences</h2>
       </div>
       <div class="dialog-body">

@@ -1,5 +1,5 @@
 /**
- * ✦ TELEGRAM DOCUMENT VAULT - OBSIDIAN CLOUD FRONTEND LOGIC
+ * ✦ TELEGRAM DOCUMENT VAULT - INSTANT RENDER FRONTEND ENGINE
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -83,8 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
     previewFileDate: document.getElementById('preview-file-date'),
     btnDownloadTelegram: document.getElementById('btn-download-telegram'),
     btnToggleFavorite: document.getElementById('btn-toggle-favorite'),
-    iconStarPreview: document.getElementById('icon-star-preview'),
-    labelStarPreview: document.getElementById('label-star-preview'),
     btnShareFile: document.getElementById('btn-share-file'),
     btnDeleteFile: document.getElementById('btn-delete-file'),
 
@@ -142,21 +140,36 @@ document.addEventListener('DOMContentLoaded', () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
   }
 
-  // Helper: File Icon Class Mapper
+  // Helper: Inline SVG Icon Resolver (Instant 0ms render)
   function getFileIconInfo(mimeType, category, name) {
     if (category === 'excel' || name.endsWith('.xlsx') || name.endsWith('.csv')) {
-      return { icon: 'file-spreadsheet', class: 'excel' };
+      return {
+        svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="8 13 16 13"/><polyline points="8 17 16 17"/></svg>`,
+        class: 'excel'
+      };
     }
     if (category === 'photo' || mimeType.startsWith('image/')) {
-      return { icon: 'image', class: 'photo' };
+      return {
+        svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+        class: 'photo'
+      };
     }
     if (category === 'video' || mimeType.startsWith('video/')) {
-      return { icon: 'video', class: 'video' };
+      return {
+        svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
+        class: 'video'
+      };
     }
     if (category === 'archive' || name.endsWith('.zip') || name.endsWith('.rar')) {
-      return { icon: 'archive', class: 'archive' };
+      return {
+        svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>`,
+        class: 'archive'
+      };
     }
-    return { icon: 'file-text', class: 'pdf' };
+    return {
+      svg: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+      class: 'pdf'
+    };
   }
 
   // Initialize Header Greeting
@@ -196,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // API Call: Load Vault Stats & Recent Items
   async function loadVaultOverview() {
     try {
-      const res = await fetch(`/api/vault?user_id=${state.user.id}`);
+      const res = await fetch(`/api/vault?user_id=${state.user.id}&first_name=${encodeURIComponent(state.user.first_name)}`);
       const data = await res.json();
 
       if (data.success) {
@@ -212,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Render Recent Files List
+  // Render Recent Files List with Inline SVGs
   function renderRecentFiles(files) {
     elements.recentFilesList.innerHTML = '';
     if (!files || files.length === 0) {
@@ -226,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.className = 'file-item-card';
       card.innerHTML = `
         <div class="file-icon-box ${iconInfo.class}">
-          <i data-lucide="${iconInfo.icon}"></i>
+          ${iconInfo.svg}
         </div>
         <div class="file-details-col">
           <div class="file-title-text">${escapeHtml(file.name)}</div>
@@ -236,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         </div>
         <button class="btn-star-icon ${file.is_starred ? 'starred' : ''}">
-          <i data-lucide="star"></i>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="${file.is_starred ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </button>
       `;
 
@@ -251,11 +264,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       elements.recentFilesList.appendChild(card);
     });
-
-    lucide.createIcons();
   }
 
-  // API Call: Fetch Folder Contents (Direct Instant Open, No Passwords!)
+  // API Call: Fetch Folder Contents
   async function loadFolderContents(folderId = null) {
     try {
       state.currentFolderId = folderId;
@@ -272,13 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Render Breadcrumb Pills
+  // Render Breadcrumb Pills with SVG
   function renderBreadcrumbs(crumbs) {
     elements.breadcrumbsBar.innerHTML = '';
     crumbs.forEach((crumb, idx) => {
       const pill = document.createElement('span');
       pill.className = `crumb-pill ${idx === crumbs.length - 1 ? 'active' : ''}`;
-      pill.innerHTML = idx === 0 ? `<i data-lucide="hard-drive"></i> ${crumb.name}` : crumb.name;
+      pill.innerHTML = idx === 0 ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg> ${crumb.name}` : crumb.name;
       pill.addEventListener('click', () => loadFolderContents(crumb.id));
 
       elements.breadcrumbsBar.appendChild(pill);
@@ -291,10 +302,9 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.breadcrumbsBar.appendChild(sep);
       }
     });
-    lucide.createIcons();
   }
 
-  // Render Explorer Folders & Files (Instant 1-Tap Access)
+  // Render Explorer Folders & Files (Instant SVG Icons)
   function renderFolderExplorer(folders, files) {
     elements.explorerFoldersContainer.innerHTML = '';
     elements.explorerFilesContainer.innerHTML = '';
@@ -304,7 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const fCard = document.createElement('div');
       fCard.className = 'folder-card-item';
       fCard.innerHTML = `
-        <i data-lucide="${folder.icon || 'folder'}" class="folder-card-icon"></i>
+        <div class="folder-card-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        </div>
         <div class="folder-card-name">${escapeHtml(folder.name)}</div>
         <div class="folder-card-meta">${folder.file_count || 0} files</div>
       `;
@@ -323,14 +335,14 @@ document.addEventListener('DOMContentLoaded', () => {
       fCard.className = 'file-item-card';
       fCard.innerHTML = `
         <div class="file-icon-box ${iconInfo.class}">
-          <i data-lucide="${iconInfo.icon}"></i>
+          ${iconInfo.svg}
         </div>
         <div class="file-details-col">
           <div class="file-title-text">${escapeHtml(file.name)}</div>
           <div class="file-sub-text">${formatBytes(file.size)} • ${formatDate(file.created_at)}</div>
         </div>
         <button class="btn-star-icon ${file.is_starred ? 'starred' : ''}">
-          <i data-lucide="star"></i>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="${file.is_starred ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </button>
       `;
 
@@ -345,8 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       elements.explorerFilesContainer.appendChild(fCard);
     });
-
-    lucide.createIcons();
   }
 
   // API Call: Fetch Starred Items
@@ -367,18 +377,19 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'file-item-card';
         card.innerHTML = `
           <div class="file-icon-box ${iconInfo.class}">
-            <i data-lucide="${iconInfo.icon}"></i>
+            ${iconInfo.svg}
           </div>
           <div class="file-details-col">
             <div class="file-title-text">${escapeHtml(file.name)}</div>
             <div class="file-sub-text">${formatBytes(file.size)} • ${file.folder_name ? escapeHtml(file.folder_name) : 'Vault Root'}</div>
           </div>
-          <button class="btn-star-icon starred"><i data-lucide="star"></i></button>
+          <button class="btn-star-icon starred">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#fbbf24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
         `;
         card.addEventListener('click', () => openFileDetailsSheet(file));
         elements.starredFilesList.appendChild(card);
       });
-      lucide.createIcons();
     } catch (err) {
       console.error('Failed to load starred files:', err);
     }
@@ -410,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = 'file-item-card';
         card.innerHTML = `
           <div class="file-icon-box ${iconInfo.class}">
-            <i data-lucide="${iconInfo.icon}"></i>
+            ${iconInfo.svg}
           </div>
           <div class="file-details-col">
             <div class="file-title-text">${escapeHtml(file.name)}</div>
@@ -423,7 +434,6 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', () => openFileDetailsSheet(file));
         elements.searchResultsList.appendChild(card);
       });
-      lucide.createIcons();
     } catch (err) {
       console.error('Search error:', err);
     }
@@ -436,21 +446,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
 
     elements.previewFileIcon.className = `file-hero-icon ${iconInfo.class}`;
-    elements.previewFileIcon.innerHTML = `<i data-lucide="${iconInfo.icon}"></i>`;
+    elements.previewFileIcon.innerHTML = iconInfo.svg;
     elements.previewFileName.textContent = file.name;
     elements.previewFileMeta.textContent = `${file.category.toUpperCase()} • ${formatBytes(file.size)}`;
     elements.previewFileDate.textContent = `Uploaded ${formatDate(file.created_at)}`;
 
-    if (file.is_starred) {
-      elements.iconStarPreview.setAttribute('data-lucide', 'star-off');
-      elements.labelStarPreview.textContent = 'Unfavorite';
-    } else {
-      elements.iconStarPreview.setAttribute('data-lucide', 'star');
-      elements.labelStarPreview.textContent = 'Favorite';
-    }
-
     elements.sheetFileDetails.classList.add('active');
-    lucide.createIcons();
   }
 
   // Download File to Telegram Chat
@@ -525,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Simple Create Folder (Zero Lock/Password!)
+  // Create Folder
   async function createFolder() {
     const name = elements.inputFolderName.value.trim();
     if (!name) {
@@ -542,8 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
           user_id: state.user.id,
           parent_id: state.currentFolderId,
           name,
-          icon: 'folder',
-          is_private: 0
+          icon: 'folder'
         })
       });
       const data = await res.json();
@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // File Upload Logic
+  // File Upload
   function handleFileUpload(fileList) {
     if (!fileList || fileList.length === 0) return;
     const file = fileList[0];
