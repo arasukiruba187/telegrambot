@@ -1,0 +1,7 @@
+node_modules/
+.env
+vault.db
+vault.db-wal
+vault.db-shm
+uploads/
+.DS_Store
