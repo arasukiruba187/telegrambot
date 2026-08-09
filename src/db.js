@@ -41,6 +41,7 @@ function initDatabase() {
       category TEXT DEFAULT 'document',
       telegram_file_id TEXT DEFAULT NULL,
       telegram_message_id TEXT DEFAULT NULL,
+      local_path TEXT DEFAULT NULL,
       is_starred INTEGER DEFAULT 0,
       is_private INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -52,6 +53,13 @@ function initDatabase() {
       value TEXT NOT NULL
     );
   `);
+
+  // Ensure local_path column exists if migrating existing db
+  try {
+    db.exec(`ALTER TABLE files ADD COLUMN local_path TEXT DEFAULT NULL;`);
+  } catch (e) {
+    // Column already exists
+  }
 
   // Seed default settings if empty
   const hasSettings = db.prepare('SELECT COUNT(*) as count FROM settings').get().count > 0;
@@ -96,7 +104,7 @@ function seedDefaultVault(userId) {
   const projectFolder = insertFolder.run(userId, null, 'Projects', 'briefcase', 0, lastWeek).lastInsertRowid;
   const photoFolder = insertFolder.run(userId, null, 'Photos', 'image', 0, lastWeek).lastInsertRowid;
   const videoFolder = insertFolder.run(userId, null, 'Videos', 'video', 0, lastWeek).lastInsertRowid;
-  const certFolder = insertFolder.run(userId, null, 'Certificates', 'award', 1, lastWeek).lastInsertRowid; // Private
+  const certFolder = insertFolder.run(userId, null, 'Certificates', 'award', 1, lastWeek).lastInsertRowid;
 
   // Subfolders under Documents
   const collegeDocFolder = insertFolder.run(userId, docFolder, 'College', 'graduation-cap', 0, lastWeek).lastInsertRowid;

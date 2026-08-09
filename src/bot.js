@@ -1,4 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
+const path = require('path');
+const fs = require('fs');
 const db = require('./db');
 
 const token = process.env.BOT_TOKEN;
@@ -110,25 +112,55 @@ if (isBotActive && bot) {
 /**
  * Dispatch document to user Telegram chat when requested from Mini App
  */
-async function sendVaultFileToChat(chatId, telegramFileId, fileName) {
+async function sendVaultFileToChat(chatId, fileRecord) {
   if (!bot || !isBotActive) {
-    return { success: false, mode: 'demo', message: 'Demo Mode: In live bot mode, Telegram sends the file directly to your chat.' };
+    return { success: false, mode: 'demo', message: 'Bot polling is inactive. Check BOT_TOKEN.' };
   }
 
   try {
-    if (telegramFileId && !telegramFileId.startsWith('demo_file_id')) {
-      await bot.sendDocument(chatId, telegramFileId, {
-        caption: `📄 *${fileName}*\n\nDelivered directly from your Telegram Document Vault.`,
-        parse_mode: 'Markdown'
-      });
-      return { success: true, message: 'Document sent to Telegram chat!' };
-    } else {
-      await bot.sendMessage(chatId, `📄 *[Demo Document Dispatch]*\n\n*${fileName}*\n\nIn live operation with real Telegram uploads, the bot sends the exact original document binary directly to your chat!`, { parse_mode: 'Markdown' });
-      return { success: true, message: 'Demo file notification sent to Telegram chat!' };
+    const telegramFileId = fileRecord.telegram_file_id;
+    const localPath = fileRecord.local_path;
+    const fileName = fileRecord.name;
+    const caption = `📄 *${fileName}*\n\nDelivered directly from your Telegram Document Vault.`;
+
+    // Case 1: File is stored locally on server disk (uploaded via Mini App file picker)
+    if (localPath && fs.existsSync(localPath)) {
+      const sentMsg = await bot.sendDocument(chatId, localPath, { caption, parse_mode: 'Markdown' });
+      if (sentMsg && sentMsg.document && sentMsg.document.file_id) {
+        db.prepare('UPDATE files SET telegram_file_id = ? WHERE id = ?').run(sentMsg.document.file_id, fileRecord.id);
+      }
+      return { success: true, message: 'Document delivered to Telegram chat!' };
     }
+
+    // Case 2: Match file in uploads/ directory if local_path wasn't explicitly saved
+    if (telegramFileId && telegramFileId.startsWith('file_vault_')) {
+      const uploadDir = path.join(__dirname, '..', 'uploads');
+      if (fs.existsSync(uploadDir)) {
+        const filesInDir = fs.readdirSync(uploadDir);
+        const match = filesInDir.find(f => f.includes(fileName) || (localPath && f.includes(path.basename(localPath))));
+        if (match) {
+          const fullPath = path.join(uploadDir, match);
+          const sentMsg = await bot.sendDocument(chatId, fullPath, { caption, parse_mode: 'Markdown' });
+          if (sentMsg && sentMsg.document && sentMsg.document.file_id) {
+            db.prepare('UPDATE files SET telegram_file_id = ? WHERE id = ?').run(sentMsg.document.file_id, fileRecord.id);
+          }
+          return { success: true, message: 'Document delivered to Telegram chat!' };
+        }
+      }
+    }
+
+    // Case 3: Pre-seeded sample files or non-Telegram IDs
+    if (!telegramFileId || telegramFileId.startsWith('demo_file_id') || telegramFileId.startsWith('file_vault_')) {
+      await bot.sendMessage(chatId, `📄 *[Vault Sample Document]*\n\n*${fileName}*\n\nThis is a sample document preview. Upload real files in chat or via the '+' button to get direct binary downloads!`, { parse_mode: 'Markdown' });
+      return { success: true, message: 'Sample document message sent to Telegram chat!' };
+    }
+
+    // Case 4: Real Telegram file_id (uploaded directly in Telegram chat)
+    await bot.sendDocument(chatId, telegramFileId, { caption, parse_mode: 'Markdown' });
+    return { success: true, message: 'Document sent to Telegram chat!' };
   } catch (err) {
-    console.error('Error sending file via bot:', err);
-    return { success: false, message: err.message };
+    console.error('Error sending file via bot:', err.message);
+    return { success: false, message: `Telegram Error: ${err.message}` };
   }
 }
 

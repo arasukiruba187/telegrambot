@@ -267,6 +267,7 @@ app.post('/api/files/upload', upload.single('file'), (req, res) => {
     const fileName = req.file.originalname;
     const fileSize = req.file.size;
     const mimeType = req.file.mimetype;
+    const localPath = req.file.path;
 
     // Detect category
     let category = 'document';
@@ -278,10 +279,10 @@ app.post('/api/files/upload', upload.single('file'), (req, res) => {
     // Save metadata in SQLite
     const telegramFileId = `file_vault_${Date.now()}`;
     const stmt = db.prepare(`
-      INSERT INTO files (user_id, folder_id, name, size, mime_type, category, telegram_file_id, is_starred, is_private)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
+      INSERT INTO files (user_id, folder_id, name, size, mime_type, category, telegram_file_id, local_path, is_starred, is_private)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
     `);
-    const info = stmt.run(userId, folderId, fileName, fileSize, mimeType, category, telegramFileId, isPrivate);
+    const info = stmt.run(userId, folderId, fileName, fileSize, mimeType, category, telegramFileId, localPath, isPrivate);
 
     const newFile = db.prepare('SELECT * FROM files WHERE id = ?').get(info.lastInsertRowid);
 
@@ -309,7 +310,7 @@ app.post('/api/files/:id/download', async (req, res) => {
       return res.status(404).json({ success: false, error: 'File not found' });
     }
 
-    const result = await sendVaultFileToChat(chatId, file.telegram_file_id, file.name);
+    const result = await sendVaultFileToChat(chatId, file);
     res.json({ success: true, ...result });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
