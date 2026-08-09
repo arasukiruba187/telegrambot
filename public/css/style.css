@@ -819,6 +819,57 @@ body.pro-theme {
   margin: 8px 0 16px 0;
 }
 
+/* LAPTOP DRAG & DROP OVERLAY */
+.drag-drop-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(11, 15, 25, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 3px dashed var(--blue-primary);
+}
+
+.drag-drop-overlay.active {
+  display: flex;
+}
+
+.drag-drop-box {
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.drag-drop-icon {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+}
+
+.drag-drop-box h2 {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.drag-drop-box p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
 /* Toast Container */
 #toast-container {
   position: fixed;

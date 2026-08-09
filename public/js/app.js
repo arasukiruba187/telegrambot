@@ -90,7 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
     btnToggleFavorite: document.getElementById('btn-toggle-favorite'),
     labelStarPreview: document.getElementById('label-star-preview'),
     btnShareFile: document.getElementById('btn-share-file'),
-    btnDeleteFile: document.getElementById('btn-delete-file')
+    btnDeleteFile: document.getElementById('btn-delete-file'),
+
+    dragDropOverlay: document.getElementById('drag-drop-overlay')
   };
 
   // Helper: Haptic Vibration
@@ -172,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Helper: Rock-Solid Touch Scroll & Long Press Detector
+  // Helper: Touch Scroll & Long Press Detector
   function addLongPressListener(element, onClickCallback, onLongPressCallback) {
     let pressTimer = null;
     let isLongPress = false;
@@ -338,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.explorerFilesContainer.innerHTML = '';
 
     if ((!folders || folders.length === 0) && (!files || files.length === 0)) {
-      elements.explorerFilesContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">Your vault is empty.<br>Tap the + button to upload files or folders.</div>';
+      elements.explorerFilesContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">Your vault is empty.<br>Tap + or drag & drop files/folders here.</div>';
       return;
     }
 
@@ -702,6 +704,108 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Recursive Drag & Drop Directory Traversal Engine
+  async function traverseFileTree(entry, pathStr = '') {
+    const collectedFiles = [];
+    if (entry.isFile) {
+      return new Promise((resolve) => {
+        entry.file((file) => {
+          const fullRelPath = pathStr ? `${pathStr}/${file.name}` : file.name;
+          try {
+            Object.defineProperty(file, 'webkitRelativePath', {
+              value: fullRelPath,
+              writable: true
+            });
+          } catch (e) {}
+          collectedFiles.push(file);
+          resolve(collectedFiles);
+        });
+      });
+    } else if (entry.isDirectory) {
+      const dirReader = entry.createReader();
+      const dirPath = pathStr ? `${pathStr}/${entry.name}` : entry.name;
+      return new Promise((resolve) => {
+        const readEntries = () => {
+          dirReader.readEntries(async (entries) => {
+            if (!entries.length) {
+              resolve(collectedFiles);
+            } else {
+              for (const childEntry of entries) {
+                const childFiles = await traverseFileTree(childEntry, dirPath);
+                collectedFiles.push(...childFiles);
+              }
+              readEntries();
+            }
+          });
+        };
+        readEntries();
+      });
+    }
+    return collectedFiles;
+  }
+
+  // Setup Laptop Drag & Drop Handlers
+  function setupLaptopDragAndDrop() {
+    let dragCounter = 0;
+
+    window.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      dragCounter++;
+      if (elements.dragDropOverlay) {
+        elements.dragDropOverlay.classList.add('active');
+      }
+    });
+
+    window.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    window.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0 && elements.dragDropOverlay) {
+        dragCounter = 0;
+        elements.dragDropOverlay.classList.remove('active');
+      }
+    });
+
+    window.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      if (elements.dragDropOverlay) {
+        elements.dragDropOverlay.classList.remove('active');
+      }
+
+      const items = e.dataTransfer?.items;
+      if (!items || items.length === 0) return;
+
+      const allFiles = [];
+      const promises = [];
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.webkitGetAsEntry) {
+          const entry = item.webkitGetAsEntry();
+          if (entry) {
+            promises.push(traverseFileTree(entry));
+          }
+        } else if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) allFiles.push(file);
+        }
+      }
+
+      if (promises.length > 0) {
+        const results = await Promise.all(promises);
+        results.forEach(fileGroup => allFiles.push(...fileGroup));
+      }
+
+      if (allFiles.length > 0) {
+        handleBulkUpload(allFiles);
+      }
+    });
+  }
+
   // Event Bindings
   function bindEvents() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -815,6 +919,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.selectDateFilter.addEventListener('change', triggerSearch);
     elements.selectSortBy.addEventListener('change', triggerSearch);
+
+    setupLaptopDragAndDrop();
   }
 
   function escapeHtml(str) {
