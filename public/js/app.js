@@ -1,5 +1,5 @@
 /**
- * ✦ TELEGRAM DOCUMENT VAULT - INSTANT RENDER FRONTEND ENGINE
+ * ✦ TELEGRAM FILE MANAGER - PROFESSIONAL ENGINE
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (tg) {
     tg.ready();
     tg.expand();
-    if (tg.setHeaderColor) tg.setHeaderColor('#07090e');
+    if (tg.setHeaderColor) tg.setHeaderColor('#0b0f19');
   }
 
   // Application State
@@ -26,18 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedFile: null
   };
 
-  // DOM Elements Selector Map
+  // DOM Elements Map
   const elements = {
     userDisplayName: document.getElementById('user-display-name'),
-    greetingTime: document.getElementById('greeting-time'),
-    userAvatarInitials: document.getElementById('user-avatar-initials'),
-    btnOpenSettings: document.getElementById('btn-open-settings'),
 
-    storagePercentLabel: document.getElementById('storage-percent-label'),
-    storageProgressFill: document.getElementById('storage-progress-fill'),
-    storageUsedLabel: document.getElementById('storage-used-label'),
-
+    homeFoldersGrid: document.getElementById('home-folders-grid'),
+    homeFilesCount: document.getElementById('home-files-count'),
     recentFilesList: document.getElementById('recent-files-list'),
+
     breadcrumbsBar: document.getElementById('breadcrumbs-bar'),
     explorerFoldersContainer: document.getElementById('explorer-folders-container'),
     explorerFilesContainer: document.getElementById('explorer-files-container'),
@@ -55,7 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnFabAdd: document.getElementById('btn-fab-add'),
     btnNewFolderHeader: document.getElementById('btn-new-folder-header'),
-    btnViewAllFiles: document.getElementById('btn-view-all-files'),
+    btnNewFolderExplorer: document.getElementById('btn-new-folder-explorer'),
+    btnViewAllFolders: document.getElementById('btn-view-all-folders'),
 
     sheetCreateOptions: document.getElementById('sheet-create-options'),
     optionNewFolder: document.getElementById('option-new-folder'),
@@ -83,17 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
     previewFileDate: document.getElementById('preview-file-date'),
     btnDownloadTelegram: document.getElementById('btn-download-telegram'),
     btnToggleFavorite: document.getElementById('btn-toggle-favorite'),
+    labelStarPreview: document.getElementById('label-star-preview'),
     btnShareFile: document.getElementById('btn-share-file'),
-    btnDeleteFile: document.getElementById('btn-delete-file'),
-
-    modalSettings: document.getElementById('modal-settings'),
-    settingAppName: document.getElementById('setting-app-name'),
-    settingStorageLimit: document.getElementById('setting-storage-limit'),
-    btnCloseSettings: document.getElementById('btn-close-settings'),
-    btnSaveSettings: document.getElementById('btn-save-settings')
+    btnDeleteFile: document.getElementById('btn-delete-file')
   };
 
-  // Helper: Haptic Vibration Trigger
+  // Helper: Haptic Vibration
   function triggerHaptic(type = 'light') {
     if (tg?.HapticFeedback) {
       if (type === 'impact') tg.HapticFeedback.impactOccurred('medium');
@@ -140,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
   }
 
-  // Helper: Inline SVG Icon Resolver (Instant 0ms render)
+  // Helper: Inline SVG Icons
   function getFileIconInfo(mimeType, category, name) {
     if (category === 'excel' || name.endsWith('.xlsx') || name.endsWith('.csv')) {
       return {
@@ -172,18 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Initialize Header Greeting
-  function initHeader() {
-    elements.userDisplayName.textContent = `${state.user.first_name} 👋`;
-    elements.userAvatarInitials.textContent = state.user.first_name.charAt(0).toUpperCase();
-
-    const hour = new Date().getHours();
-    let timeGreeting = 'Good morning,';
-    if (hour >= 12 && hour < 17) timeGreeting = 'Good afternoon,';
-    else if (hour >= 17) timeGreeting = 'Good evening,';
-    elements.greetingTime.textContent = timeGreeting;
-  }
-
   // Switch View Tab
   function switchTab(tabName) {
     triggerHaptic();
@@ -197,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeNavBtn = document.querySelector(`.nav-btn[data-tab="${tabName}"]`);
     if (activeNavBtn) activeNavBtn.classList.add('active');
 
-    if (tabName === 'home') loadVaultOverview();
+    if (tabName === 'home') loadHomeOverview();
     else if (tabName === 'files') loadFolderContents(state.currentFolderId);
     else if (tabName === 'starred') loadStarredFiles();
     else if (tabName === 'search') {
@@ -206,55 +186,89 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // API Call: Load Vault Stats & Recent Items
-  async function loadVaultOverview() {
+  // API Call: Fetch Home Folders & Files
+  async function loadHomeOverview() {
     try {
-      const res = await fetch(`/api/vault?user_id=${state.user.id}&first_name=${encodeURIComponent(state.user.first_name)}`);
-      const data = await res.json();
+      const userId = state.user.id;
+      elements.userDisplayName.textContent = state.user.first_name;
 
-      if (data.success) {
-        const pct = data.stats.used_percentage;
-        elements.storagePercentLabel.textContent = `${pct}%`;
-        elements.storageProgressFill.style.width = `${pct}%`;
-        elements.storageUsedLabel.textContent = `${formatBytes(data.stats.used_bytes)} of ${formatBytes(data.stats.limit_bytes)} used`;
+      // Fetch root folders
+      const folderRes = await fetch(`/api/folders?user_id=${userId}&parent_id=null`);
+      const folderData = await folderRes.json();
 
-        renderRecentFiles(data.recent_files);
+      if (folderData.success) {
+        renderHomeFolders(folderData.folders);
+      }
+
+      // Fetch vault summary
+      const vaultRes = await fetch(`/api/vault?user_id=${userId}`);
+      const vaultData = await vaultRes.json();
+
+      if (vaultData.success) {
+        elements.homeFilesCount.textContent = `${vaultData.stats.total_files} files`;
+        renderRecentFiles(vaultData.recent_files);
       }
     } catch (err) {
-      console.error('Failed to load vault stats:', err);
+      console.error('Failed to load home overview:', err);
     }
   }
 
-  // Render Recent Files List with Inline SVGs
+  // Render Folders Grid on Home
+  function renderHomeFolders(folders) {
+    elements.homeFoldersGrid.innerHTML = '';
+    if (!folders || folders.length === 0) {
+      elements.homeFoldersGrid.innerHTML = '<div style="grid-column: span 2; padding: 16px; text-align: center; color: var(--text-muted);">No folders created</div>';
+      return;
+    }
+
+    folders.forEach(folder => {
+      const card = document.createElement('div');
+      card.className = 'folder-card-pro';
+      card.innerHTML = `
+        <svg viewBox="0 0 24 24" class="folder-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <div class="folder-pro-name">${escapeHtml(folder.name)}</div>
+        <div class="folder-pro-count">${folder.file_count || 0} files</div>
+      `;
+
+      card.addEventListener('click', () => {
+        switchTab('files');
+        loadFolderContents(folder.id);
+      });
+
+      elements.homeFoldersGrid.appendChild(card);
+    });
+  }
+
+  // Render Recent Files List
   function renderRecentFiles(files) {
     elements.recentFilesList.innerHTML = '';
     if (!files || files.length === 0) {
-      elements.recentFilesList.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);">No files in your vault yet.</div>';
+      elements.recentFilesList.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);">No documents in your workspace yet.</div>';
       return;
     }
 
     files.forEach(file => {
       const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
-      const card = document.createElement('div');
-      card.className = 'file-item-card';
-      card.innerHTML = `
-        <div class="file-icon-box ${iconInfo.class}">
+      const row = document.createElement('div');
+      row.className = 'file-row-pro';
+      row.innerHTML = `
+        <div class="file-type-badge ${iconInfo.class}">
           ${iconInfo.svg}
         </div>
-        <div class="file-details-col">
-          <div class="file-title-text">${escapeHtml(file.name)}</div>
-          <div class="file-sub-text">
+        <div class="file-info-col">
+          <div class="file-name-text">${escapeHtml(file.name)}</div>
+          <div class="file-sub-info">
             <span>${formatBytes(file.size)} • ${formatDate(file.created_at)}</span>
-            ${file.folder_name ? `<span class="folder-badge-tag">${escapeHtml(file.folder_name)}</span>` : ''}
+            ${file.folder_name ? `<span class="path-tag">${escapeHtml(file.folder_name)}</span>` : ''}
           </div>
         </div>
-        <button class="btn-star-icon ${file.is_starred ? 'starred' : ''}">
+        <button class="btn-star ${file.is_starred ? 'starred' : ''}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="${file.is_starred ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </button>
       `;
 
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-star-icon')) {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-star')) {
           e.stopPropagation();
           toggleStarFile(file.id);
         } else {
@@ -262,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      elements.recentFilesList.appendChild(card);
+      elements.recentFilesList.appendChild(row);
     });
   }
 
@@ -283,16 +297,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Render Breadcrumb Pills with SVG
+  // Render Breadcrumb Pills
   function renderBreadcrumbs(crumbs) {
     elements.breadcrumbsBar.innerHTML = '';
     crumbs.forEach((crumb, idx) => {
-      const pill = document.createElement('span');
-      pill.className = `crumb-pill ${idx === crumbs.length - 1 ? 'active' : ''}`;
-      pill.innerHTML = idx === 0 ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg> ${crumb.name}` : crumb.name;
-      pill.addEventListener('click', () => loadFolderContents(crumb.id));
+      const item = document.createElement('span');
+      item.className = `crumb-item ${idx === crumbs.length - 1 ? 'active' : ''}`;
+      item.innerHTML = idx === 0 ? `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 2-2 2v13c0 1.1.9 2 2 2z"/></svg> ${crumb.name}` : crumb.name;
+      item.addEventListener('click', () => loadFolderContents(crumb.id));
 
-      elements.breadcrumbsBar.appendChild(pill);
+      elements.breadcrumbsBar.appendChild(item);
 
       if (idx < crumbs.length - 1) {
         const sep = document.createElement('span');
@@ -304,50 +318,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Render Explorer Folders & Files (Instant SVG Icons)
+  // Render Explorer Folders & Files
   function renderFolderExplorer(folders, files) {
     elements.explorerFoldersContainer.innerHTML = '';
     elements.explorerFilesContainer.innerHTML = '';
 
-    // Folders Grid
     folders.forEach(folder => {
-      const fCard = document.createElement('div');
-      fCard.className = 'folder-card-item';
-      fCard.innerHTML = `
-        <div class="folder-card-icon">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <div class="folder-card-name">${escapeHtml(folder.name)}</div>
-        <div class="folder-card-meta">${folder.file_count || 0} files</div>
+      const card = document.createElement('div');
+      card.className = 'folder-card-pro';
+      card.innerHTML = `
+        <svg viewBox="0 0 24 24" class="folder-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <div class="folder-pro-name">${escapeHtml(folder.name)}</div>
+        <div class="folder-pro-count">${folder.file_count || 0} files</div>
       `;
 
-      fCard.addEventListener('click', () => {
+      card.addEventListener('click', () => {
         loadFolderContents(folder.id);
       });
 
-      elements.explorerFoldersContainer.appendChild(fCard);
+      elements.explorerFoldersContainer.appendChild(card);
     });
 
-    // Files List
     files.forEach(file => {
       const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
-      const fCard = document.createElement('div');
-      fCard.className = 'file-item-card';
-      fCard.innerHTML = `
-        <div class="file-icon-box ${iconInfo.class}">
+      const row = document.createElement('div');
+      row.className = 'file-row-pro';
+      row.innerHTML = `
+        <div class="file-type-badge ${iconInfo.class}">
           ${iconInfo.svg}
         </div>
-        <div class="file-details-col">
-          <div class="file-title-text">${escapeHtml(file.name)}</div>
-          <div class="file-sub-text">${formatBytes(file.size)} • ${formatDate(file.created_at)}</div>
+        <div class="file-info-col">
+          <div class="file-name-text">${escapeHtml(file.name)}</div>
+          <div class="file-sub-info">${formatBytes(file.size)} • ${formatDate(file.created_at)}</div>
         </div>
-        <button class="btn-star-icon ${file.is_starred ? 'starred' : ''}">
+        <button class="btn-star ${file.is_starred ? 'starred' : ''}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="${file.is_starred ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </button>
       `;
 
-      fCard.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-star-icon')) {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-star')) {
           e.stopPropagation();
           toggleStarFile(file.id);
         } else {
@@ -355,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      elements.explorerFilesContainer.appendChild(fCard);
+      elements.explorerFilesContainer.appendChild(row);
     });
   }
 
@@ -367,35 +377,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
       elements.starredFilesList.innerHTML = '';
       if (!data.files || data.files.length === 0) {
-        elements.starredFilesList.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">No favorite files pinned yet.</div>';
+        elements.starredFilesList.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">No favorite documents pinned yet.</div>';
         return;
       }
 
       data.files.forEach(file => {
         const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
-        const card = document.createElement('div');
-        card.className = 'file-item-card';
-        card.innerHTML = `
-          <div class="file-icon-box ${iconInfo.class}">
+        const row = document.createElement('div');
+        row.className = 'file-row-pro';
+        row.innerHTML = `
+          <div class="file-type-badge ${iconInfo.class}">
             ${iconInfo.svg}
           </div>
-          <div class="file-details-col">
-            <div class="file-title-text">${escapeHtml(file.name)}</div>
-            <div class="file-sub-text">${formatBytes(file.size)} • ${file.folder_name ? escapeHtml(file.folder_name) : 'Vault Root'}</div>
+          <div class="file-info-col">
+            <div class="file-name-text">${escapeHtml(file.name)}</div>
+            <div class="file-sub-info">${formatBytes(file.size)} • ${file.folder_name ? escapeHtml(file.folder_name) : 'Root'}</div>
           </div>
-          <button class="btn-star-icon starred">
+          <button class="btn-star starred">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="#fbbf24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           </button>
         `;
-        card.addEventListener('click', () => openFileDetailsSheet(file));
-        elements.starredFilesList.appendChild(card);
+        row.addEventListener('click', () => openFileDetailsSheet(file));
+        elements.starredFilesList.appendChild(row);
       });
     } catch (err) {
       console.error('Failed to load starred files:', err);
     }
   }
 
-  // API Call: Search Vault
+  // API Call: Search Engine
   async function triggerSearch() {
     try {
       const query = elements.searchInput.value.trim();
@@ -411,28 +421,28 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.searchResultsList.innerHTML = '';
 
       if (!data.files || data.files.length === 0) {
-        elements.searchResultsList.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">No matching files found.</div>';
+        elements.searchResultsList.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">No matching documents found.</div>';
         return;
       }
 
       data.files.forEach(file => {
         const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
-        const card = document.createElement('div');
-        card.className = 'file-item-card';
-        card.innerHTML = `
-          <div class="file-icon-box ${iconInfo.class}">
+        const row = document.createElement('div');
+        row.className = 'file-row-pro';
+        row.innerHTML = `
+          <div class="file-type-badge ${iconInfo.class}">
             ${iconInfo.svg}
           </div>
-          <div class="file-details-col">
-            <div class="file-title-text">${escapeHtml(file.name)}</div>
-            <div class="file-sub-text">
+          <div class="file-info-col">
+            <div class="file-name-text">${escapeHtml(file.name)}</div>
+            <div class="file-sub-info">
               <span>${formatBytes(file.size)}</span>
-              ${file.folder_name ? `<span class="folder-badge-tag">${escapeHtml(file.folder_name)}</span>` : ''}
+              ${file.folder_name ? `<span class="path-tag">${escapeHtml(file.folder_name)}</span>` : ''}
             </div>
           </div>
         `;
-        card.addEventListener('click', () => openFileDetailsSheet(file));
-        elements.searchResultsList.appendChild(card);
+        row.addEventListener('click', () => openFileDetailsSheet(file));
+        elements.searchResultsList.appendChild(row);
       });
     } catch (err) {
       console.error('Search error:', err);
@@ -492,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (data.success) {
         showToast(data.is_starred ? '⭐ Added to Favorites' : 'Removed from Favorites');
-        if (state.currentTab === 'home') loadVaultOverview();
+        if (state.currentTab === 'home') loadHomeOverview();
         else if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
         else if (state.currentTab === 'starred') loadStarredFiles();
         if (elements.sheetFileDetails.classList.contains('active')) {
@@ -516,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.success) {
         showToast('🗑 File deleted', 'success');
         elements.sheetFileDetails.classList.remove('active');
-        if (state.currentTab === 'home') loadVaultOverview();
+        if (state.currentTab === 'home') loadHomeOverview();
         else if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
         else if (state.currentTab === 'starred') loadStarredFiles();
         else if (state.currentTab === 'search') triggerSearch();
@@ -553,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.modalNewFolder.classList.remove('active');
         elements.inputFolderName.value = '';
         if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
-        else loadVaultOverview();
+        else loadHomeOverview();
       }
     } catch (err) {
       showToast('Error creating folder', 'error');
@@ -596,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.modalUploadProgress.classList.remove('active');
 
             if (state.currentTab === 'files') loadFolderContents(state.currentFolderId);
-            else loadVaultOverview();
+            else loadHomeOverview();
           } catch (err) {
             showToast('Upload failed', 'error');
             elements.modalUploadProgress.classList.remove('active');
@@ -624,9 +634,17 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.modalNewFolder.classList.add('active');
     });
 
-    elements.btnNewFolderHeader.addEventListener('click', () => {
-      elements.modalNewFolder.classList.add('active');
-    });
+    if (elements.btnNewFolderHeader) {
+      elements.btnNewFolderHeader.addEventListener('click', () => {
+        elements.modalNewFolder.classList.add('active');
+      });
+    }
+
+    if (elements.btnNewFolderExplorer) {
+      elements.btnNewFolderExplorer.addEventListener('click', () => {
+        elements.modalNewFolder.classList.add('active');
+      });
+    }
 
     elements.btnCancelFolder.addEventListener('click', () => {
       elements.modalNewFolder.classList.remove('active');
@@ -670,43 +688,19 @@ document.addEventListener('DOMContentLoaded', () => {
       triggerSearch();
     });
 
-    elements.filterTypePills.querySelectorAll('.pill-btn').forEach(pill => {
+    elements.filterTypePills.querySelectorAll('.pill-chip').forEach(pill => {
       pill.addEventListener('click', () => {
-        elements.filterTypePills.querySelectorAll('.pill-btn').forEach(p => p.classList.remove('active'));
+        elements.filterTypePills.querySelectorAll('.pill-chip').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         state.selectedCategory = pill.getAttribute('data-type');
         triggerSearch();
       });
     });
 
-    document.querySelectorAll('.cat-chip-btn').forEach(chip => {
-      chip.addEventListener('click', () => {
-        document.querySelectorAll('.cat-chip-btn').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        state.selectedCategory = chip.getAttribute('data-cat');
-        switchTab('search');
-      });
-    });
-
     elements.selectDateFilter.addEventListener('change', triggerSearch);
     elements.selectSortBy.addEventListener('change', triggerSearch);
 
-    elements.btnOpenSettings.addEventListener('click', () => elements.modalSettings.classList.add('active'));
-    elements.btnCloseSettings.addEventListener('click', () => elements.modalSettings.classList.remove('active'));
-    elements.btnSaveSettings.addEventListener('click', async () => {
-      const appName = elements.settingAppName.value;
-      const limitGb = parseInt(elements.settingStorageLimit.value, 10) || 10;
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ app_name: appName, storage_limit_bytes: limitGb * 1024 * 1024 * 1024 })
-      });
-      showToast('✓ Preferences saved', 'success');
-      elements.modalSettings.classList.remove('active');
-      loadVaultOverview();
-    });
-
-    elements.btnViewAllFiles.addEventListener('click', () => switchTab('files'));
+    elements.btnViewAllFolders.addEventListener('click', () => switchTab('files'));
   }
 
   function escapeHtml(str) {
@@ -715,9 +709,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function boot() {
-    initHeader();
     bindEvents();
-    loadVaultOverview();
+    loadHomeOverview();
   }
 
   boot();

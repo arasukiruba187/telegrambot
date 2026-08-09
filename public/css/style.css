@@ -1,35 +1,29 @@
 /* ==========================================================================
-   ✦ OBSIDIAN CLOUD MINIMALIST DESIGN SYSTEM - TELEGRAM VAULT
+   ✦ PROFESSIONAL DOCUMENT & FILES MANAGER - STYLESHEET
    ========================================================================== */
 
 :root {
-  --bg-main: #07090e;
-  --bg-card: rgba(15, 21, 33, 0.7);
-  --bg-card-hover: rgba(24, 32, 48, 0.85);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-highlight: rgba(255, 255, 255, 0.12);
+  --bg-dark: #0b0f19;
+  --bg-card: #131b2e;
+  --bg-card-hover: #1c2742;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-active: rgba(59, 130, 246, 0.4);
 
-  --accent-primary: #06b6d4;
-  --accent-purple: #8b5cf6;
-  --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-rose: #f43f5e;
-
+  --blue-primary: #3b82f6;
+  --blue-hover: #2563eb;
+  --blue-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  --radius-xl: 20px;
-  --radius-lg: 14px;
-  --radius-md: 10px;
+  --radius-xl: 18px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
   --radius-sm: 6px;
 
   --font-main: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-display: 'Outfit', sans-serif;
-
-  --shadow-glow: 0 10px 30px -5px rgba(6, 182, 212, 0.25);
-  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --font-heading: 'Outfit', sans-serif;
   --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -41,50 +35,12 @@
   user-select: none;
 }
 
-body.obsidian-theme {
-  background-color: var(--bg-main);
+body.pro-theme {
+  background-color: var(--bg-dark);
   color: var(--text-primary);
   font-family: var(--font-main);
   min-height: 100vh;
   overflow-x: hidden;
-  position: relative;
-}
-
-/* Background Ambient Glows */
-.glow-orb {
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(140px);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.orb-primary {
-  width: 350px;
-  height: 350px;
-  background: rgba(6, 182, 212, 0.12);
-  top: -100px;
-  left: -80px;
-}
-
-.orb-secondary {
-  width: 380px;
-  height: 380px;
-  background: rgba(139, 92, 246, 0.12);
-  bottom: 60px;
-  right: -100px;
-}
-
-.bg-grid-pattern {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 28px 28px;
-  pointer-events: none;
-  z-index: 0;
 }
 
 #app-container {
@@ -94,23 +50,7 @@ body.obsidian-theme {
   display: flex;
   flex-direction: column;
   position: relative;
-  z-index: 1;
-  padding-bottom: 96px;
-}
-
-/* Glass Card Component */
-.glass-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  transition: all 0.25s var(--ease-smooth);
-}
-
-.glass-card:hover {
-  border-color: var(--border-highlight);
+  padding-bottom: 84px;
 }
 
 /* Header */
@@ -121,7 +61,7 @@ body.obsidian-theme {
   padding: 16px 20px;
   position: sticky;
   top: 0;
-  background: rgba(7, 9, 14, 0.85);
+  background: rgba(11, 15, 25, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   z-index: 10;
@@ -134,55 +74,48 @@ body.obsidian-theme {
   gap: 12px;
 }
 
-.brand-logo {
-  width: 36px;
-  height: 36px;
+.brand-icon {
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
-  background: var(--accent-gradient);
+  background: var(--blue-gradient);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-glow);
-}
-
-.brand-logo i {
-  width: 20px;
-  height: 20px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .brand-name {
-  font-family: var(--font-display);
-  font-weight: 800;
+  font-family: var(--font-heading);
+  font-weight: 700;
   font-size: 17px;
-  letter-spacing: 1px;
-  display: block;
+  letter-spacing: 0.5px;
 }
 
-.brand-subtitle {
+.brand-user-name {
   font-size: 11px;
   color: var(--text-muted);
   display: block;
-  margin-top: -2px;
 }
 
-.header-icon-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+.btn-create-folder-sm {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--blue-primary);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  gap: 6px;
 }
 
-.header-icon-btn:active {
-  transform: scale(0.94);
-  background: rgba(255, 255, 255, 0.1);
+.btn-create-folder-sm:active {
+  background: var(--blue-primary);
+  color: #fff;
 }
 
 /* Main Content Area */
@@ -193,59 +126,23 @@ body.obsidian-theme {
 
 .tab-view {
   display: none;
-  animation: fadeIn 0.3s var(--ease-smooth);
 }
 
 .tab-view.active {
   display: block;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 1. HOME VIEW STYLES */
-.hero-greeting-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.greeting-label {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.greeting-name {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-top: 2px;
-}
-
-.user-avatar-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--accent-gradient);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 18px;
-  box-shadow: var(--shadow-glow);
-}
-
-/* Search Bar Trigger */
-.search-bar-trigger {
+/* Search Trigger Bar */
+.search-trigger-bar {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  padding: 14px 18px;
+  padding: 14px 16px;
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -253,146 +150,90 @@ body.obsidian-theme {
   color: var(--text-muted);
   cursor: pointer;
   margin-bottom: 20px;
-  transition: all 0.25s ease;
 }
 
-.search-bar-trigger:hover {
-  border-color: var(--accent-primary);
-  color: var(--text-secondary);
-}
-
-.search-bar-icon {
-  width: 18px;
-  height: 18px;
-}
-
-.search-bar-text {
+.search-placeholder {
   font-size: 14px;
 }
 
-/* Storage Gauge Card */
-.storage-gauge-card {
-  padding: 20px;
-  margin-bottom: 24px;
-  background: linear-gradient(135deg, rgba(20, 27, 42, 0.7) 0%, rgba(12, 17, 27, 0.7) 100%);
-}
-
-.gauge-header {
+/* Section Header Bar */
+.section-label-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.gauge-title-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.section-label-text {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--text-muted);
 }
 
-.gauge-icon {
-  width: 14px;
-  height: 14px;
-  color: var(--accent-primary);
-}
-
-.gauge-percent {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--accent-primary);
-}
-
-.gauge-bar-track {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 12px;
-}
-
-.gauge-bar-fill {
-  height: 100%;
-  background: var(--accent-gradient);
-  border-radius: 10px;
-  transition: width 0.8s var(--ease-smooth);
-}
-
-.gauge-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* Section Title Bar */
-.section-title-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.section-title-text {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: var(--text-muted);
-}
-
-.section-action-btn {
+.section-link-btn {
   background: none;
   border: none;
-  color: var(--accent-primary);
+  color: var(--blue-primary);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
 
-/* Category Chips Scroll Row */
-.category-chips-scroll {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 24px;
+.section-count-tag {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
-.cat-chip-btn {
-  background: rgba(255, 255, 255, 0.04);
+/* Folders Grid Layout */
+.folders-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.folder-card-pro {
+  background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  border-radius: var(--radius-lg);
+  padding: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.cat-chip-btn.active {
-  background: var(--accent-gradient);
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+.folder-card-pro:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-active);
+  transform: translateY(-2px);
 }
 
-/* Recent Files Stack */
-.recent-files-stack {
+.folder-icon-svg {
+  width: 32px;
+  height: 32px;
+  color: var(--blue-primary);
+  margin-bottom: 10px;
+}
+
+.folder-pro-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.folder-pro-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Files Stack Layout */
+.files-stack {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.file-item-card {
+.file-row-pro {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -404,36 +245,34 @@ body.obsidian-theme {
   transition: all 0.2s ease;
 }
 
-.file-item-card:hover {
+.file-row-pro:hover {
   background: var(--bg-card-hover);
-  border-color: var(--border-highlight);
-  transform: translateY(-1px);
+  border-color: var(--border-active);
 }
 
-.file-icon-box {
-  width: 42px;
-  height: 42px;
+.file-type-badge {
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
   flex-shrink: 0;
 }
 
-.file-icon-box.pdf { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
-.file-icon-box.excel { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-.file-icon-box.photo { background: rgba(6, 182, 212, 0.15); color: #38bdf8; }
-.file-icon-box.video { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-.file-icon-box.archive { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
-.file-icon-box.document { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.file-type-badge.pdf { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+.file-type-badge.excel { background: rgba(16, 185, 129, 0.12); color: #34d399; }
+.file-type-badge.photo { background: rgba(14, 165, 233, 0.12); color: #38bdf8; }
+.file-type-badge.video { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+.file-type-badge.archive { background: rgba(139, 92, 246, 0.12); color: #c084fc; }
+.file-type-badge.document { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
 
-.file-details-col {
+.file-info-col {
   flex: 1;
   min-width: 0;
 }
 
-.file-title-text {
+.file-name-text {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
@@ -442,7 +281,7 @@ body.obsidian-theme {
   text-overflow: ellipsis;
 }
 
-.file-sub-text {
+.file-sub-info {
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
@@ -451,38 +290,37 @@ body.obsidian-theme {
   gap: 8px;
 }
 
-.folder-badge-tag {
-  background: rgba(255, 255, 255, 0.06);
+.path-tag {
+  background: rgba(255, 255, 255, 0.05);
   padding: 1px 6px;
   border-radius: 4px;
   font-size: 10px;
   color: var(--text-secondary);
 }
 
-.btn-star-icon {
+.btn-star {
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
   padding: 6px;
-  transition: color 0.2s ease;
 }
 
-.btn-star-icon.starred {
+.btn-star.starred {
   color: #fbbf24;
 }
 
-/* 2. FILES EXPLORER STYLES */
-.breadcrumb-nav-container {
+/* Explorer Breadcrumbs */
+.breadcrumb-bar {
   display: flex;
   align-items: center;
   gap: 6px;
   overflow-x: auto;
-  padding: 8px 0;
+  padding: 6px 0;
   margin-bottom: 12px;
 }
 
-.crumb-pill {
+.crumb-item {
   font-size: 13px;
   color: var(--text-muted);
   cursor: pointer;
@@ -491,99 +329,36 @@ body.obsidian-theme {
   gap: 4px;
 }
 
-.crumb-pill.active {
-  color: var(--accent-primary);
+.crumb-item.active {
+  color: var(--blue-primary);
   font-weight: 600;
 }
 
-.explorer-control-bar {
+.explorer-control-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
-.explorer-count-label {
+.count-badge {
   font-size: 13px;
   color: var(--text-muted);
 }
 
-.btn-create-folder-pill {
-  background: rgba(6, 182, 212, 0.12);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-  color: var(--accent-primary);
-  font-weight: 600;
-  font-size: 12px;
-  padding: 8px 14px;
-  border-radius: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.btn-create-folder-pill:active {
-  background: var(--accent-primary);
-  color: #fff;
-}
-
-.explorer-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.folder-card-item {
+/* Search Page */
+.search-input-box {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.folder-card-item:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--border-highlight);
-  transform: translateY(-2px);
-}
-
-.folder-card-icon {
-  font-size: 28px;
-  color: var(--accent-primary);
-  margin-bottom: 10px;
-}
-
-.folder-card-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.folder-card-meta {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.explorer-files-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* 4. SEARCH STYLES */
-.search-input-card {
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
   margin-bottom: 14px;
 }
 
-.search-input-card input {
+.search-input-box input {
   background: none;
   border: none;
   outline: none;
@@ -593,14 +368,14 @@ body.obsidian-theme {
   font-family: var(--font-main);
 }
 
-.btn-clear-input {
+.btn-clear-search {
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
 }
 
-.filter-pills-row {
+.type-pills-row {
   display: flex;
   gap: 8px;
   overflow-x: auto;
@@ -608,7 +383,7 @@ body.obsidian-theme {
   margin-bottom: 12px;
 }
 
-.pill-btn {
+.pill-chip {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
@@ -619,13 +394,13 @@ body.obsidian-theme {
   cursor: pointer;
 }
 
-.pill-btn.active {
-  background: var(--accent-gradient);
+.pill-chip.active {
+  background: var(--blue-primary);
   color: #fff;
   border-color: transparent;
 }
 
-.sub-filter-controls {
+.filter-dropdowns-row {
   display: flex;
   gap: 10px;
   margin-bottom: 16px;
@@ -642,7 +417,7 @@ body.obsidian-theme {
   flex: 1;
 }
 
-.search-status-bar {
+.results-header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -653,6 +428,23 @@ body.obsidian-theme {
   margin-bottom: 12px;
 }
 
+/* Page Headers */
+.page-title-bar {
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.page-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 /* BOTTOM NAVIGATION BAR */
 .bottom-nav-bar {
   position: fixed;
@@ -661,8 +453,8 @@ body.obsidian-theme {
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  height: 72px;
-  background: rgba(10, 14, 22, 0.92);
+  height: 68px;
+  background: rgba(13, 19, 31, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-subtle);
@@ -684,39 +476,32 @@ body.obsidian-theme {
   font-weight: 500;
   cursor: pointer;
   width: 60px;
-  transition: all 0.2s ease;
-}
-
-.nav-btn i {
-  width: 22px;
-  height: 22px;
 }
 
 .nav-btn.active {
-  color: var(--accent-primary);
+  color: var(--blue-primary);
 }
 
 .nav-fab-center {
-  width: 52px;
-  height: 52px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  background: var(--accent-gradient);
+  background: var(--blue-gradient);
   border: none;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
   margin-top: -24px;
-  transition: transform 0.2s var(--ease-smooth);
 }
 
 .nav-fab-center:active {
-  transform: scale(0.92) rotate(45deg);
+  transform: scale(0.92);
 }
 
-/* MODALS & BOTTOM SHEETS */
+/* MODALS & SHEETS */
 .sheet-backdrop {
   position: fixed;
   top: 0;
@@ -724,7 +509,7 @@ body.obsidian-theme {
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
   z-index: 1000;
   display: none;
   align-items: flex-end;
@@ -736,14 +521,14 @@ body.obsidian-theme {
 }
 
 .bottom-sheet-card {
-  background: #0d121d;
-  border: 1px solid var(--border-highlight);
+  background: #111726;
+  border: 1px solid var(--border-subtle);
   border-top-left-radius: var(--radius-xl);
   border-top-right-radius: var(--radius-xl);
   width: 100%;
   max-width: 480px;
   padding: 20px;
-  animation: slideUp 0.3s var(--ease-smooth);
+  animation: slideUp 0.25s var(--ease-smooth);
 }
 
 @keyframes slideUp {
@@ -751,10 +536,10 @@ body.obsidian-theme {
   to { transform: translateY(0); }
 }
 
-.sheet-indicator {
-  width: 40px;
+.sheet-handle {
+  width: 36px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 2px;
   margin: 0 auto 16px auto;
 }
@@ -763,14 +548,14 @@ body.obsidian-theme {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .sheet-title-row h2 {
-  font-family: var(--font-display);
-  font-size: 16px;
+  font-family: var(--font-heading);
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .sheet-close-btn {
@@ -780,97 +565,90 @@ body.obsidian-theme {
   cursor: pointer;
 }
 
-.sheet-menu-grid {
+.action-menu-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.sheet-menu-item {
+.menu-action-item {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  padding: 14px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s ease;
 }
 
-.sheet-menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+.menu-action-item:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.menu-item-icon {
-  width: 44px;
-  height: 44px;
+.menu-icon-box {
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
 }
 
-.menu-item-icon.icon-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
-.menu-item-icon.icon-cyan { background: rgba(6, 182, 212, 0.15); color: #38bdf8; }
-.menu-item-icon.icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-.menu-item-icon.icon-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.menu-icon-box.icon-purple { background: rgba(139, 92, 246, 0.12); color: #a78bfa; }
+.menu-icon-box.icon-blue { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+.menu-icon-box.icon-emerald { background: rgba(16, 185, 129, 0.12); color: #34d399; }
+.menu-icon-box.icon-amber { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
 
-.menu-item-text h3 {
+.menu-text-col h3 {
   font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.menu-item-text p {
+.menu-text-col p {
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-/* Center Dialog Card */
+/* Center Dialog */
 .center-dialog-card {
-  background: #0d121d;
-  border: 1px solid var(--border-highlight);
+  background: #111726;
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   width: 90%;
   max-width: 380px;
   padding: 24px;
   margin: auto;
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.dialog-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.dialog-icon-wrapper {
-  width: 48px;
-  height: 48px;
+.dialog-icon-badge {
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: var(--accent-gradient);
+  background: var(--blue-gradient);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 12px auto;
-  font-size: 22px;
 }
 
-.dialog-header p {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 4px;
+.center-dialog-card h2 {
+  font-family: var(--font-heading);
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.input-field-group {
-  margin-bottom: 16px;
+.dialog-input-group {
+  margin: 16px 0;
 }
 
-.input-field-group label {
+.dialog-input-group label {
   display: block;
   font-size: 12px;
   font-weight: 600;
@@ -878,7 +656,7 @@ body.obsidian-theme {
   margin-bottom: 6px;
 }
 
-.input-field-group input {
+.dialog-input-group input {
   width: 100%;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-subtle);
@@ -889,15 +667,14 @@ body.obsidian-theme {
   outline: none;
 }
 
-.dialog-footer {
+.dialog-btns {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 10px;
 }
 
-.btn-action {
+.btn-primary {
   flex: 1;
-  background: var(--accent-gradient);
+  background: var(--blue-gradient);
   border: none;
   color: #fff;
   font-weight: 600;
@@ -917,23 +694,22 @@ body.obsidian-theme {
   cursor: pointer;
 }
 
-/* File Hero & Download Button */
-.file-hero-wrapper {
+/* File Preview Sheet */
+.file-hero-box {
   text-align: center;
-  padding: 20px 0;
+  padding: 16px 0;
 }
 
 .file-hero-icon {
-  width: 68px;
-  height: 68px;
+  width: 64px;
+  height: 64px;
   border-radius: var(--radius-lg);
-  background: rgba(6, 182, 212, 0.15);
-  color: #38bdf8;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--blue-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  margin: 0 auto 14px auto;
+  margin: 0 auto 12px auto;
 }
 
 .file-hero-title {
@@ -941,25 +717,22 @@ body.obsidian-theme {
   font-weight: 700;
 }
 
-.file-hero-badge {
+.file-hero-meta {
   display: inline-block;
   font-size: 12px;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.06);
-  padding: 2px 8px;
-  border-radius: 12px;
-  margin-top: 6px;
-}
-
-.file-hero-time {
-  display: block;
-  font-size: 12px;
-  color: var(--text-muted);
   margin-top: 4px;
 }
 
-.file-actions-stack {
-  margin-top: 20px;
+.file-hero-date {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.file-actions-group {
+  margin-top: 16px;
 }
 
 .btn-download-telegram {
@@ -969,25 +742,25 @@ body.obsidian-theme {
   color: #fff;
   font-weight: 700;
   font-size: 14px;
-  padding: 16px;
+  padding: 14px;
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 136, 204, 0.35);
-  margin-bottom: 16px;
+  box-shadow: 0 6px 20px rgba(0, 136, 204, 0.3);
+  margin-bottom: 12px;
 }
 
-.secondary-actions-grid {
+.actions-pill-row {
   display: flex;
   gap: 8px;
 }
 
-.action-pill-btn {
+.action-pill {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   padding: 10px;
@@ -1000,9 +773,9 @@ body.obsidian-theme {
   cursor: pointer;
 }
 
-.action-pill-btn.danger {
-  color: var(--accent-rose);
-  border-color: rgba(244, 63, 94, 0.3);
+.action-pill.danger {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 /* Upload Progress Modal */
@@ -1010,36 +783,36 @@ body.obsidian-theme {
   text-align: center;
 }
 
-.progress-spinner-container {
+.spinner-wrapper {
   position: relative;
   width: 90px;
   height: 90px;
-  margin: 0 auto 16px auto;
+  margin: 0 auto 14px auto;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.progress-percent-val {
+.progress-val {
   position: absolute;
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-weight: 800;
   font-size: 18px;
-  color: var(--accent-primary);
+  color: var(--blue-primary);
 }
 
-.upload-title-text {
+.upload-title {
   font-size: 16px;
   font-weight: 700;
 }
 
-.upload-file-name {
+.upload-filename {
   font-size: 13px;
   color: var(--text-secondary);
   margin-top: 4px;
 }
 
-.upload-bytes-info {
+.upload-metrics {
   display: block;
   font-size: 12px;
   color: var(--text-muted);
@@ -1062,12 +835,12 @@ body.obsidian-theme {
 }
 
 .toast {
-  background: rgba(13, 18, 29, 0.95);
-  border: 1px solid var(--accent-primary);
+  background: rgba(19, 27, 46, 0.95);
+  border: 1px solid var(--blue-primary);
   color: var(--text-primary);
   padding: 12px 16px;
   border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
