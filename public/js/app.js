@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // API Call: Search Engine
+  // API Call: Search Engine (Folders + Files)
   async function triggerSearch() {
     try {
       const query = elements.searchInput.value.trim();
@@ -451,34 +451,84 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.resultsCountBadge.textContent = `${data.total} items`;
       elements.searchResultsList.innerHTML = '';
 
-      if (!data.files || data.files.length === 0) {
-        elements.searchResultsList.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">No matching documents found.</div>';
+      const hasFolders = data.folders && data.folders.length > 0;
+      const hasFiles = data.files && data.files.length > 0;
+
+      if (!hasFolders && !hasFiles) {
+        elements.searchResultsList.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-muted);">No matching folders or files found.</div>';
         return;
       }
 
-      data.files.forEach(file => {
-        const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
-        const row = document.createElement('div');
-        row.className = 'file-row-pro';
-        row.innerHTML = `
-          <div class="file-type-badge ${iconInfo.class}">
-            ${iconInfo.svg}
-          </div>
-          <div class="file-info-col">
-            <div class="file-name-text">${escapeHtml(file.name)}</div>
-            <div class="file-sub-info">
-              <span>${formatBytes(file.size)}</span>
-              ${file.folder_name ? `<span class="path-tag">${escapeHtml(file.folder_name)}</span>` : ''}
+      // Render Matching Folders
+      if (hasFolders) {
+        const folderHeader = document.createElement('div');
+        folderHeader.className = 'section-label-text';
+        folderHeader.style.margin = '8px 0';
+        folderHeader.textContent = 'MATCHING FOLDERS';
+        elements.searchResultsList.appendChild(folderHeader);
+
+        const folderGrid = document.createElement('div');
+        folderGrid.className = 'folders-grid';
+        folderGrid.style.marginBottom = '16px';
+
+        data.folders.forEach(folder => {
+          const card = document.createElement('div');
+          card.className = 'folder-card-pro';
+          card.innerHTML = `
+            <svg viewBox="0 0 24 24" class="folder-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <div class="folder-pro-name">${escapeHtml(folder.name)}</div>
+            <div class="folder-pro-count">${folder.file_count || 0} files</div>
+          `;
+
+          addLongPressListener(
+            card,
+            () => {
+              switchTab('files');
+              loadFolderContents(folder.id);
+            },
+            () => openContextMenu('folder', folder)
+          );
+
+          folderGrid.appendChild(card);
+        });
+
+        elements.searchResultsList.appendChild(folderGrid);
+      }
+
+      // Render Matching Files
+      if (hasFiles) {
+        if (hasFolders) {
+          const fileHeader = document.createElement('div');
+          fileHeader.className = 'section-label-text';
+          fileHeader.style.margin = '8px 0';
+          fileHeader.textContent = 'MATCHING DOCUMENTS';
+          elements.searchResultsList.appendChild(fileHeader);
+        }
+
+        data.files.forEach(file => {
+          const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
+          const row = document.createElement('div');
+          row.className = 'file-row-pro';
+          row.innerHTML = `
+            <div class="file-type-badge ${iconInfo.class}">
+              ${iconInfo.svg}
             </div>
-          </div>
-        `;
-        addLongPressListener(
-          row,
-          () => openFileDetailsSheet(file),
-          () => openContextMenu('file', file)
-        );
-        elements.searchResultsList.appendChild(row);
-      });
+            <div class="file-info-col">
+              <div class="file-name-text">${escapeHtml(file.name)}</div>
+              <div class="file-sub-info">
+                <span>${formatBytes(file.size)}</span>
+                ${file.folder_name ? `<span class="path-tag">${escapeHtml(file.folder_name)}</span>` : ''}
+              </div>
+            </div>
+          `;
+          addLongPressListener(
+            row,
+            () => openFileDetailsSheet(file),
+            () => openContextMenu('file', file)
+          );
+          elements.searchResultsList.appendChild(row);
+        });
+      }
     } catch (err) {
       console.error('Search error:', err);
     }

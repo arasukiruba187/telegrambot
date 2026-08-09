@@ -60,7 +60,6 @@ function getBreadcrumbs(folderId, userId = DEFAULT_USER_ID) {
 
 /**
  * Helper: Find or Create Folder Path (For Folder Uploads)
- * e.g., relativeFolderPath = "MyProject/Documents/Specs"
  */
 function getOrCreateFolderPath(userId, folderPathStr, baseParentId = null) {
   if (!folderPathStr || !folderPathStr.trim()) return baseParentId;
@@ -246,7 +245,7 @@ app.delete('/api/folders/:id', (req, res) => {
 });
 
 /**
- * 6. Files List & Search API
+ * 6. Files & Folders Unified Search API
  */
 app.get('/api/files', (req, res) => {
   try {
@@ -259,8 +258,21 @@ app.get('/api/files', (req, res) => {
     const dateFilter = req.query.date_filter || 'all';
     const sortBy = req.query.sort_by || 'newest';
 
+    // Search Folders matching query
+    let matchingFolders = [];
+    if (query && category === 'all' && !starredOnly) {
+      matchingFolders = db.prepare(`
+        SELECT f.*, 'folder' as item_type, 
+          (SELECT COUNT(*) FROM files WHERE folder_id = f.id) as file_count
+        FROM folders f 
+        WHERE f.user_id = ? AND LOWER(f.name) LIKE ?
+        ORDER BY f.name ASC
+      `).all(userId, `%${query}%`);
+    }
+
+    // Search Files matching query
     let sql = `
-      SELECT f.*, fol.name as folder_name 
+      SELECT f.*, 'file' as item_type, fol.name as folder_name 
       FROM files f 
       LEFT JOIN folders fol ON f.folder_id = fol.id 
       WHERE f.user_id = ?
@@ -305,7 +317,8 @@ app.get('/api/files', (req, res) => {
 
     res.json({
       success: true,
-      total: files.length,
+      total: matchingFolders.length + files.length,
+      folders: matchingFolders,
       files
     });
   } catch (err) {
@@ -350,7 +363,6 @@ app.post('/api/files/upload', upload.array('files', 100), (req, res) => {
 
       let targetFolderId = baseFolderId;
 
-      // Check if file has relative path (folder upload)
       const relPath = relativePaths[index];
       if (relPath && relPath.includes('/')) {
         const folderDir = relPath.substring(0, relPath.lastIndexOf('/'));
