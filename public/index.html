@@ -19,135 +19,108 @@
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="dark-theme">
-  <!-- Background Glow & Mesh Effects -->
-  <div class="bg-glow bg-glow-1"></div>
-  <div class="bg-glow bg-glow-2"></div>
-  <div class="bg-mesh"></div>
+<body class="obsidian-theme">
+  <!-- Background Glow Orbs -->
+  <div class="glow-orb orb-primary"></div>
+  <div class="glow-orb orb-secondary"></div>
+  <div class="bg-grid-pattern"></div>
 
   <div id="app-container">
-    <!-- Top Header -->
+    <!-- Header -->
     <header class="app-header">
-      <div class="header-left">
-        <span class="vault-logo-icon">✦</span>
-        <span id="app-title-text" class="vault-title">VAULT</span>
-        <span class="status-badge" id="status-badge"><span class="dot"></span> Online</span>
+      <div class="header-brand">
+        <div class="brand-logo"><i data-lucide="cloud-lightning"></i></div>
+        <div class="brand-text">
+          <span id="app-title-text" class="brand-name">VAULT</span>
+          <span class="brand-subtitle">Cloud Storage</span>
+        </div>
       </div>
-      <div class="header-right">
-        <button class="icon-btn" id="btn-open-settings" title="Settings">
-          <i data-lucide="settings"></i>
-        </button>
-        <button class="icon-btn" id="btn-lock-vault" title="Lock Vault">
-          <i data-lucide="shield-lock"></i>
+      <div class="header-actions">
+        <button class="header-icon-btn" id="btn-open-settings" title="Settings">
+          <i data-lucide="sliders"></i>
         </button>
       </div>
     </header>
 
-    <!-- Main Dynamic View Container -->
+    <!-- Main Content Container -->
     <main id="main-content">
       <!-- 1. HOME VIEW -->
       <section id="view-home" class="tab-view active">
-        <!-- User Greeting -->
-        <div class="user-greeting-card">
-          <div class="greeting-text">
-            <span class="greeting-subtitle" id="greeting-time">Good afternoon,</span>
-            <h1 class="greeting-title" id="user-display-name">Arasu 👋</h1>
+        <!-- Hero Greeting Banner -->
+        <div class="hero-greeting-box">
+          <div class="greeting-content">
+            <span class="greeting-label" id="greeting-time">Good afternoon,</span>
+            <h1 class="greeting-name" id="user-display-name">Arasu 👋</h1>
           </div>
-          <div class="user-avatar" id="user-avatar-initials">A</div>
+          <div class="user-avatar-badge" id="user-avatar-initials">A</div>
         </div>
 
-        <!-- Quick Search Bar Trigger -->
-        <div class="search-trigger-box" id="home-search-trigger">
-          <i data-lucide="search" class="search-icon"></i>
-          <span class="search-placeholder">Search your vault...</span>
-          <kbd class="shortcut-tag">⌘K</kbd>
+        <!-- Quick Search Bar -->
+        <div class="search-bar-trigger" id="home-search-trigger">
+          <i data-lucide="search" class="search-bar-icon"></i>
+          <span class="search-bar-text">Search documents, folders, files...</span>
         </div>
 
-        <!-- Storage Meter Card -->
-        <div class="storage-card glass-card">
-          <div class="storage-card-header">
-            <span class="card-label">YOUR STORAGE</span>
-            <span class="storage-percent" id="storage-percent-label">64%</span>
+        <!-- Storage Card -->
+        <div class="storage-gauge-card glass-card">
+          <div class="gauge-header">
+            <div class="gauge-title-group">
+              <i data-lucide="hard-drive" class="gauge-icon"></i>
+              <span>STORAGE USAGE</span>
+            </div>
+            <span class="gauge-percent" id="storage-percent-label">64%</span>
           </div>
-          <div class="storage-progress-bar">
-            <div class="storage-progress-fill" id="storage-progress-fill" style="width: 64%;"></div>
+          <div class="gauge-bar-track">
+            <div class="gauge-bar-fill" id="storage-progress-fill" style="width: 64%;"></div>
           </div>
-          <div class="storage-card-footer">
-            <span class="storage-used" id="storage-used-label">6.4 GB / 10 GB</span>
-            <span class="storage-details-link" id="btn-storage-info">View Details</span>
+          <div class="gauge-footer">
+            <span class="gauge-metrics" id="storage-used-label">6.4 GB of 10.0 GB used</span>
           </div>
         </div>
 
-        <!-- Quick Access Folders -->
-        <div class="section-header">
-          <h2 class="section-title">QUICK ACCESS</h2>
-          <button class="section-link-btn" id="btn-view-all-folders">View All</button>
+        <!-- Category Filter Chips -->
+        <div class="section-title-bar">
+          <h2 class="section-title-text">CATEGORIES</h2>
         </div>
-        <div class="quick-access-grid" id="quick-access-grid">
-          <div class="quick-folder-card" data-category="Documents" data-folder-name="Documents">
-            <div class="folder-icon-wrapper blue"><i data-lucide="file-text"></i></div>
-            <div class="folder-info">
-              <span class="folder-title">Documents</span>
-              <span class="folder-count" id="count-documents">-- files</span>
-            </div>
-          </div>
-          <div class="quick-folder-card" data-category="Projects" data-folder-name="Projects">
-            <div class="folder-icon-wrapper purple"><i data-lucide="briefcase"></i></div>
-            <div class="folder-info">
-              <span class="folder-title">Projects</span>
-              <span class="folder-count" id="count-projects">-- files</span>
-            </div>
-          </div>
-          <div class="quick-folder-card" data-category="Certificates" data-folder-name="Certificates">
-            <div class="folder-icon-wrapper amber"><i data-lucide="award"></i></div>
-            <div class="folder-info">
-              <span class="folder-title">Certificates</span>
-              <span class="folder-count" id="count-certificates">-- files</span>
-            </div>
-          </div>
-          <div class="quick-folder-card" data-category="Personal" data-folder-name="Photos">
-            <div class="folder-icon-wrapper emerald"><i data-lucide="image"></i></div>
-            <div class="folder-info">
-              <span class="folder-title">Photos</span>
-              <span class="folder-count" id="count-photos">-- files</span>
-            </div>
-          </div>
+        <div class="category-chips-scroll">
+          <button class="cat-chip-btn active" data-cat="all">
+            <i data-lucide="layers"></i> All
+          </button>
+          <button class="cat-chip-btn" data-cat="document">
+            <i data-lucide="file-text"></i> Documents
+          </button>
+          <button class="cat-chip-btn" data-cat="excel">
+            <i data-lucide="file-spreadsheet"></i> Excel
+          </button>
+          <button class="cat-chip-btn" data-cat="photo">
+            <i data-lucide="image"></i> Photos
+          </button>
+          <button class="cat-chip-btn" data-cat="video">
+            <i data-lucide="video"></i> Videos
+          </button>
         </div>
 
         <!-- Recent Files -->
-        <div class="section-header">
-          <h2 class="section-title">RECENT</h2>
-          <span class="recent-tag">Updated live</span>
+        <div class="section-title-bar">
+          <h2 class="section-title-text">RECENT FILES</h2>
+          <button class="section-action-btn" id="btn-view-all-files">View All</button>
         </div>
-        <div class="recent-files-list glass-card" id="recent-files-list">
-          <div class="skeleton-loader">
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line short"></div>
-          </div>
-        </div>
+        <div class="recent-files-stack" id="recent-files-list"></div>
       </section>
 
       <!-- 2. FILES EXPLORER VIEW -->
       <section id="view-files" class="tab-view">
-        <!-- Breadcrumbs Navigation -->
-        <div class="breadcrumbs-bar" id="breadcrumbs-bar">
-          <span class="crumb active"><i data-lucide="hard-drive"></i> My Vault</span>
+        <!-- Breadcrumb Navigation Bar -->
+        <div class="breadcrumb-nav-container" id="breadcrumbs-bar">
+          <span class="crumb-pill active"><i data-lucide="hard-drive"></i> Vault</span>
         </div>
 
-        <!-- Action Toolbar -->
-        <div class="explorer-toolbar">
-          <div class="toolbar-left">
-            <span class="item-count-badge" id="explorer-item-count">0 items</span>
-          </div>
-          <div class="toolbar-right">
-            <button class="toolbar-btn" id="btn-new-folder-header">
+        <!-- Explorer Control Bar -->
+        <div class="explorer-control-bar">
+          <span class="explorer-count-label" id="explorer-item-count">0 items</span>
+          <div class="explorer-actions">
+            <button class="btn-create-folder-pill" id="btn-new-folder-header">
               <i data-lucide="folder-plus"></i> New Folder
-            </button>
-            <button class="icon-btn-sm active" id="btn-view-grid" title="Grid View">
-              <i data-lucide="layout-grid"></i>
-            </button>
-            <button class="icon-btn-sm" id="btn-view-list" title="List View">
-              <i data-lucide="list"></i>
             </button>
           </div>
         </div>
@@ -156,30 +129,30 @@
         <div id="explorer-folders-container" class="explorer-grid"></div>
 
         <!-- Files Section -->
-        <div id="explorer-files-container" class="explorer-grid files-section"></div>
+        <div id="explorer-files-container" class="explorer-files-list"></div>
       </section>
 
-      <!-- 3. STARRED VIEW -->
+      <!-- 3. FAVORITES / STARRED VIEW -->
       <section id="view-starred" class="tab-view">
-        <div class="view-header">
-          <h1 class="view-title">⭐ Starred Files</h1>
-          <p class="view-subtitle">Quick access to your pinned and favorite vault items</p>
+        <div class="view-title-header">
+          <h1 class="page-heading">⭐ Favorites</h1>
+          <p class="page-subheading">Your pinned documents & quick access files</p>
         </div>
-        <div class="files-list-container glass-card" id="starred-files-list"></div>
+        <div class="starred-files-stack" id="starred-files-list"></div>
       </section>
 
       <!-- 4. SEARCH VIEW -->
       <section id="view-search" class="tab-view">
-        <!-- Search Input Bar -->
-        <div class="search-input-wrapper glass-card">
-          <i data-lucide="search" class="search-icon"></i>
-          <input type="text" id="search-input" placeholder="Search files, documents, folders..." autocomplete="off">
-          <button class="clear-search-btn" id="btn-clear-search" style="display:none;">
+        <!-- Search Input Box -->
+        <div class="search-input-card glass-card">
+          <i data-lucide="search" class="search-card-icon"></i>
+          <input type="text" id="search-input" placeholder="Search by file name or extension..." autocomplete="off">
+          <button class="btn-clear-input" id="btn-clear-search" style="display:none;">
             <i data-lucide="x"></i>
           </button>
         </div>
 
-        <!-- Search Filters Pill Row -->
+        <!-- Filter Chips Row -->
         <div class="filter-pills-row" id="filter-type-pills">
           <button class="pill-btn active" data-type="all">All</button>
           <button class="pill-btn" data-type="document">📄 PDF</button>
@@ -190,53 +163,53 @@
         </div>
 
         <!-- Sub Filters: Date & Sort -->
-        <div class="sub-filters-bar">
-          <select id="select-date-filter" class="filter-dropdown">
+        <div class="sub-filter-controls">
+          <select id="select-date-filter" class="select-dropdown">
             <option value="all">Any time</option>
             <option value="today">Today</option>
             <option value="week">This week</option>
             <option value="month">This month</option>
           </select>
-          <select id="select-sort-by" class="filter-dropdown">
-            <option value="newest">Sort: Newest</option>
-            <option value="oldest">Sort: Oldest</option>
-            <option value="name">Sort: Name</option>
-            <option value="size">Sort: Size</option>
+          <select id="select-sort-by" class="select-dropdown">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">Sort by Name</option>
+            <option value="size">Sort by Size</option>
           </select>
         </div>
 
         <!-- Search Results Count -->
-        <div class="search-results-info" id="search-results-info">
-          <span>RESULTS</span>
-          <span class="results-count" id="results-count-badge">0 found</span>
+        <div class="search-status-bar">
+          <span>SEARCH RESULTS</span>
+          <span class="results-badge" id="results-count-badge">0 items</span>
         </div>
 
-        <!-- Search Results List -->
-        <div class="search-results-list" id="search-results-list"></div>
+        <!-- Results List -->
+        <div class="search-results-stack" id="search-results-list"></div>
       </section>
     </main>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-tab="home">
+    <nav class="bottom-nav-bar">
+      <button class="nav-btn active" data-tab="home">
         <i data-lucide="home"></i>
         <span>Home</span>
       </button>
-      <button class="nav-item" data-tab="files">
+      <button class="nav-btn" data-tab="files">
         <i data-lucide="folder"></i>
         <span>Files</span>
       </button>
 
-      <!-- Center FAB '+' Button -->
-      <button class="nav-fab-btn" id="btn-fab-add" title="Add / Upload">
+      <!-- Center Floating Plus Button -->
+      <button class="nav-fab-center" id="btn-fab-add" title="Upload or Create">
         <i data-lucide="plus"></i>
       </button>
 
-      <button class="nav-item" data-tab="starred">
+      <button class="nav-btn" data-tab="starred">
         <i data-lucide="star"></i>
-        <span>Starred</span>
+        <span>Favorites</span>
       </button>
-      <button class="nav-item" data-tab="search">
+      <button class="nav-btn" data-tab="search">
         <i data-lucide="search"></i>
         <span>Search</span>
       </button>
@@ -245,41 +218,41 @@
 
   <!-- MODALS & BOTTOM SHEETS -->
 
-  <!-- 1. FAB Upload / Create Options Bottom Sheet -->
-  <div class="modal-backdrop" id="sheet-create-options">
-    <div class="bottom-sheet glass-sheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-header">
-        <h2>CREATE</h2>
-        <button class="icon-btn-sm" class="close-sheet-btn"><i data-lucide="x"></i></button>
+  <!-- 1. Upload / Create Bottom Sheet -->
+  <div class="sheet-backdrop" id="sheet-create-options">
+    <div class="bottom-sheet-card">
+      <div class="sheet-indicator"></div>
+      <div class="sheet-title-row">
+        <h2>CREATE & UPLOAD</h2>
+        <button class="sheet-close-btn"><i data-lucide="x"></i></button>
       </div>
-      <div class="action-options-list">
-        <button class="action-option-item" id="option-new-folder">
-          <div class="option-icon purple"><i data-lucide="folder-plus"></i></div>
-          <div class="option-text">
-            <h3>📁 New Folder</h3>
-            <p>Organize your documents in nested folders</p>
+      <div class="sheet-menu-grid">
+        <button class="sheet-menu-item" id="option-new-folder">
+          <div class="menu-item-icon icon-purple"><i data-lucide="folder-plus"></i></div>
+          <div class="menu-item-text">
+            <h3>New Folder</h3>
+            <p>Create a directory to organize files</p>
           </div>
         </button>
-        <button class="action-option-item" id="option-upload-file">
-          <div class="option-icon blue"><i data-lucide="file-up"></i></div>
-          <div class="option-text">
-            <h3>📄 Upload File</h3>
-            <p>Select PDF, Word, Excel or zip files</p>
+        <button class="sheet-menu-item" id="option-upload-file">
+          <div class="menu-item-icon icon-cyan"><i data-lucide="file-up"></i></div>
+          <div class="menu-item-text">
+            <h3>Upload Documents</h3>
+            <p>PDF, Word, Excel, ZIP or text files</p>
           </div>
         </button>
-        <button class="action-option-item" id="option-upload-photo">
-          <div class="option-icon emerald"><i data-lucide="image"></i></div>
-          <div class="option-text">
-            <h3>🖼 Upload Photos</h3>
-            <p>Upload PNG, JPG or RAW images</p>
+        <button class="sheet-menu-item" id="option-upload-photo">
+          <div class="menu-item-icon icon-emerald"><i data-lucide="image"></i></div>
+          <div class="menu-item-text">
+            <h3>Upload Images</h3>
+            <p>PNG, JPG, SVG or RAW photos</p>
           </div>
         </button>
-        <button class="action-option-item" id="option-upload-video">
-          <div class="option-icon amber"><i data-lucide="video"></i></div>
-          <div class="option-text">
-            <h3>🎬 Upload Video</h3>
-            <p>Store high definition media</p>
+        <button class="sheet-menu-item" id="option-upload-video">
+          <div class="menu-item-icon icon-amber"><i data-lucide="video"></i></div>
+          <div class="menu-item-text">
+            <h3>Upload Videos</h3>
+            <p>MP4, MOV or media recordings</p>
           </div>
         </button>
       </div>
@@ -287,89 +260,78 @@
     </div>
   </div>
 
-  <!-- 2. New Folder Modal -->
-  <div class="modal-backdrop" id="modal-new-folder">
-    <div class="center-modal glass-modal">
-      <div class="modal-header">
-        <div class="modal-avatar-icon"><i data-lucide="folder-plus"></i></div>
-        <h2>NEW FOLDER</h2>
+  <!-- 2. New Folder Simple Modal (No Password!) -->
+  <div class="sheet-backdrop" id="modal-new-folder">
+    <div class="center-dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-icon-wrapper"><i data-lucide="folder-plus"></i></div>
+        <h2>New Folder</h2>
+        <p>Enter a name for your new directory</p>
       </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Folder name</label>
-          <input type="text" id="input-folder-name" placeholder="e.g. College Documents" autocomplete="off">
-        </div>
-        <div class="form-group row-group">
-          <div class="toggle-label">
-            <i data-lucide="lock" class="lock-sm"></i>
-            <span>Private folder (PIN required)</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="switch-private-folder">
-            <span class="slider round"></span>
-          </label>
+      <div class="dialog-body">
+        <div class="input-field-group">
+          <label>Folder Name</label>
+          <input type="text" id="input-folder-name" placeholder="e.g. Work Projects" autocomplete="off">
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" id="btn-cancel-folder">Cancel</button>
-        <button class="btn-primary" id="btn-confirm-folder">Create</button>
+      <div class="dialog-footer">
+        <button class="btn-cancel" id="btn-cancel-folder">Cancel</button>
+        <button class="btn-action" id="btn-confirm-folder">Create Folder</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. Animated Upload Progress Overlay -->
-  <div class="modal-backdrop" id="modal-upload-progress">
-    <div class="center-modal glass-modal upload-progress-modal">
-      <div class="upload-progress-ring-wrapper">
-        <svg class="progress-ring" width="100" height="100">
-          <circle class="progress-ring-bg" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="transparent" r="40" cx="50" cy="50"/>
-          <circle class="progress-ring-fill" id="progress-ring-circle" stroke="url(#progress-gradient)" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" fill="transparent" r="40" cx="50" cy="50"/>
+  <!-- 3. Upload Progress Sheet -->
+  <div class="sheet-backdrop" id="modal-upload-progress">
+    <div class="center-dialog-card upload-card">
+      <div class="progress-spinner-container">
+        <svg class="spinner-svg" width="90" height="90">
+          <circle class="spinner-track" stroke="rgba(255,255,255,0.1)" stroke-width="7" fill="transparent" r="36" cx="45" cy="45"/>
+          <circle class="spinner-fill" id="progress-ring-circle" stroke="url(#spinner-gradient)" stroke-width="7" stroke-dasharray="226" stroke-dashoffset="226" stroke-linecap="round" fill="transparent" r="36" cx="45" cy="45"/>
           <defs>
-            <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#6366f1"/>
-              <stop offset="100%" stop-color="#a855f7"/>
+            <linearGradient id="spinner-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#06b6d4"/>
+              <stop offset="100%" stop-color="#3b82f6"/>
             </linearGradient>
           </defs>
         </svg>
-        <span class="upload-percent-text" id="upload-percent-text">0%</span>
+        <span class="progress-percent-val" id="upload-percent-text">0%</span>
       </div>
-      <h3 class="upload-status-title">Uploading...</h3>
-      <p class="upload-filename" id="upload-filename-text">Resume.pdf</p>
-      <div class="upload-metrics">
-        <span id="upload-bytes-text">0 MB / 0 MB</span>
-      </div>
-      <button class="btn-secondary btn-sm" id="btn-cancel-upload">Cancel</button>
+      <h3 class="upload-title-text">Uploading File...</h3>
+      <p class="upload-file-name" id="upload-filename-text">Document.pdf</p>
+      <span class="upload-bytes-info" id="upload-bytes-text">0 MB / 0 MB</span>
+      <button class="btn-cancel btn-sm" id="btn-cancel-upload">Cancel</button>
     </div>
   </div>
 
   <!-- 4. File Details & Preview Bottom Sheet -->
-  <div class="modal-backdrop" id="sheet-file-details">
-    <div class="bottom-sheet glass-sheet file-details-sheet">
-      <div class="sheet-handle"></div>
-      <div class="file-preview-hero">
-        <div class="hero-file-icon" id="preview-file-icon"><i data-lucide="file-text"></i></div>
-        <h2 class="hero-file-name" id="preview-file-name">Resume.pdf</h2>
-        <span class="hero-file-meta" id="preview-file-meta">PDF • 2.4 MB</span>
-        <span class="hero-file-date" id="preview-file-date">Uploaded Aug 09, 2026</span>
+  <div class="sheet-backdrop" id="sheet-file-details">
+    <div class="bottom-sheet-card file-preview-sheet">
+      <div class="sheet-indicator"></div>
+      <div class="file-hero-wrapper">
+        <div class="file-hero-icon" id="preview-file-icon"><i data-lucide="file-text"></i></div>
+        <h2 class="file-hero-title" id="preview-file-name">Document.pdf</h2>
+        <span class="file-hero-badge" id="preview-file-meta">PDF • 2.4 MB</span>
+        <span class="file-hero-time" id="preview-file-date">Uploaded Aug 09, 2026</span>
       </div>
 
-      <div class="preview-actions-group">
-        <!-- Download to Telegram Button -->
+      <div class="file-actions-stack">
+        <!-- Direct Telegram Download Button -->
         <button class="btn-download-telegram" id="btn-download-telegram">
           <i data-lucide="send"></i>
           <span>↓ DOWNLOAD TO TELEGRAM CHAT</span>
         </button>
 
-        <div class="secondary-actions-row">
-          <button class="action-btn-pill" id="btn-toggle-favorite">
+        <div class="secondary-actions-grid">
+          <button class="action-pill-btn" id="btn-toggle-favorite">
             <i data-lucide="star" id="icon-star-preview"></i>
-            <span id="label-star-preview">Add to Favorites</span>
+            <span id="label-star-preview">Favorite</span>
           </button>
-          <button class="action-btn-pill" id="btn-share-file">
+          <button class="action-pill-btn" id="btn-share-file">
             <i data-lucide="share-2"></i>
             <span>Share Link</span>
           </button>
-          <button class="action-btn-pill danger" id="btn-delete-file">
+          <button class="action-pill-btn danger" id="btn-delete-file">
             <i data-lucide="trash-2"></i>
             <span>Delete</span>
           </button>
@@ -378,77 +340,34 @@
     </div>
   </div>
 
-  <!-- 5. Security PIN Lock Overlay -->
-  <div id="pin-lock-overlay" class="pin-overlay" style="display: none;">
-    <div class="pin-container">
-      <div class="pin-header">
-        <div class="pin-lock-icon">🔐</div>
-        <h2>VAULT SECURITY</h2>
-        <p id="pin-prompt-text">Enter 4-digit PIN to unlock</p>
+  <!-- 5. Settings Modal (Simplified) -->
+  <div class="sheet-backdrop" id="modal-settings">
+    <div class="center-dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-icon-wrapper"><i data-lucide="sliders"></i></div>
+        <h2>Vault Preferences</h2>
       </div>
-
-      <div class="pin-dots-row" id="pin-dots-row">
-        <span class="pin-dot"></span>
-        <span class="pin-dot"></span>
-        <span class="pin-dot"></span>
-        <span class="pin-dot"></span>
-      </div>
-
-      <div class="pin-keypad">
-        <button class="key-btn" data-key="1">1</button>
-        <button class="key-btn" data-key="2">2</button>
-        <button class="key-btn" data-key="3">3</button>
-        <button class="key-btn" data-key="4">4</button>
-        <button class="key-btn" data-key="5">5</button>
-        <button class="key-btn" data-key="6">6</button>
-        <button class="key-btn" data-key="7">7</button>
-        <button class="key-btn" data-key="8">8</button>
-        <button class="key-btn" data-key="9">9</button>
-        <button class="key-btn fn-key" data-key="clear">CLR</button>
-        <button class="key-btn" data-key="0">0</button>
-        <button class="key-btn fn-key" data-key="back"><i data-lucide="delete"></i></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 6. Settings & Customization Modal -->
-  <div class="modal-backdrop" id="modal-settings">
-    <div class="center-modal glass-modal settings-modal">
-      <div class="modal-header">
-        <div class="modal-avatar-icon"><i data-lucide="settings"></i></div>
-        <h2>VAULT SETTINGS</h2>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Vault App Name</label>
-          <input type="text" id="setting-app-name" value="✦ TELEGRAM VAULT">
+      <div class="dialog-body">
+        <div class="input-field-group">
+          <label>App Name</label>
+          <input type="text" id="setting-app-name" value="✦ VAULT">
         </div>
-        <div class="form-group">
+        <div class="input-field-group">
           <label>Storage Limit (GB)</label>
           <input type="number" id="setting-storage-limit" value="10">
         </div>
-        <div class="form-group row-group">
-          <div class="toggle-label">
-            <i data-lucide="shield-check" class="lock-sm"></i>
-            <span>Enable 4-Digit PIN Security</span>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="setting-switch-pin">
-            <span class="slider round"></span>
-          </label>
-        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" id="btn-close-settings">Close</button>
-        <button class="btn-primary" id="btn-save-settings">Save Changes</button>
+      <div class="dialog-footer">
+        <button class="btn-cancel" id="btn-close-settings">Close</button>
+        <button class="btn-action" id="btn-save-settings">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification System -->
+  <!-- Toast Message System -->
   <div id="toast-container"></div>
 
-  <!-- Application Script -->
+  <!-- Main Application Script -->
   <script src="/js/app.js"></script>
 </body>
 </html>
