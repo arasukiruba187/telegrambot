@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Render Explorer Folders & Files
+  // Render Explorer Folders & Files (Only Folder Name + Icon)
   function renderFolderExplorer(folders, files) {
     elements.explorerFoldersContainer.innerHTML = '';
     elements.explorerFilesContainer.innerHTML = '';
@@ -352,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <svg viewBox="0 0 24 24" class="folder-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <div class="folder-pro-name">${escapeHtml(folder.name)}</div>
-        <div class="folder-pro-count">${folder.file_count || 0} files</div>
       `;
 
       addLongPressListener(
@@ -461,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Render Matching Folders
+      // Render Matching Folders (Only Folder Name + Icon)
       if (hasFolders) {
         const folderHeader = document.createElement('div');
         folderHeader.className = 'section-label-text';
@@ -479,7 +478,6 @@ document.addEventListener('DOMContentLoaded', () => {
           card.innerHTML = `
             <svg viewBox="0 0 24 24" class="folder-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
             <div class="folder-pro-name">${escapeHtml(folder.name)}</div>
-            <div class="folder-pro-count">${folder.file_count || 0} files</div>
           `;
 
           addLongPressListener(
