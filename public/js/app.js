@@ -38,16 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
     explorerFilesContainer: document.getElementById('explorer-files-container'),
     explorerItemCount: document.getElementById('explorer-item-count'),
     btnToggleMultiSelect: document.getElementById('btn-toggle-multiselect'),
-    starredFilesList: document.getElementById('starred-files-list'),
-    searchResultsList: document.getElementById('search-results-list'),
-    resultsCountBadge: document.getElementById('results-count-badge'),
+    labelSelectToggle: document.getElementById('label-select-toggle'),
+    inlineSelectionActions: document.getElementById('inline-selection-actions'),
 
-    multiselectActionBar: document.getElementById('multiselect-action-bar'),
-    multiselectCountTag: document.getElementById('multiselect-count-tag'),
     btnBulkShare: document.getElementById('btn-bulk-share'),
     btnBulkTelegram: document.getElementById('btn-bulk-telegram'),
     btnBulkDelete: document.getElementById('btn-bulk-delete'),
-    btnCancelMultiSelect: document.getElementById('btn-cancel-multiselect'),
+
+    starredFilesList: document.getElementById('starred-files-list'),
+    searchResultsList: document.getElementById('search-results-list'),
+    resultsCountBadge: document.getElementById('results-count-badge'),
 
     homeSearchTrigger: document.getElementById('home-search-trigger'),
     searchInput: document.getElementById('search-input'),
@@ -294,15 +294,23 @@ document.addEventListener('DOMContentLoaded', () => {
     updateMultiSelectUI();
   }
 
-  // Bottom Action Bar displays ONLY when at least 1 item is selected!
+  // Inline Actions displayed ONLY when at least 1 item is selected!
   function updateMultiSelectUI() {
     const count = state.selectedItems.size;
-    elements.multiselectCountTag.textContent = `${count} selected`;
 
-    if (count > 0 && state.isMultiSelect) {
-      elements.multiselectActionBar.classList.add('active');
+    if (state.isMultiSelect) {
+      elements.btnToggleMultiSelect.classList.add('active');
+      elements.labelSelectToggle.textContent = count > 0 ? `Cancel (${count})` : 'Cancel';
+
+      if (count > 0) {
+        elements.inlineSelectionActions.style.display = 'flex';
+      } else {
+        elements.inlineSelectionActions.style.display = 'none';
+      }
     } else {
-      elements.multiselectActionBar.classList.remove('active');
+      elements.btnToggleMultiSelect.classList.remove('active');
+      elements.labelSelectToggle.textContent = 'Select';
+      elements.inlineSelectionActions.style.display = 'none';
     }
 
     refreshCurrentView();
@@ -311,9 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function exitMultiSelectMode() {
     state.isMultiSelect = false;
     state.selectedItems.clear();
-    elements.btnToggleMultiSelect.classList.remove('active');
-    elements.multiselectActionBar.classList.remove('active');
-    refreshCurrentView();
+    updateMultiSelectUI();
   }
 
   // Switch View Tab (With Reset Folder Option)
@@ -416,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         },
         () => {
-          // Long press ALWAYS triggers Context Menu sheet (Rename, Delete)
           openContextMenu('folder', folder);
         }
       );
@@ -463,7 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         },
         () => {
-          // Long press ALWAYS triggers Context Menu sheet (Rename, Delete)
           openContextMenu('file', file);
         }
       );
@@ -660,7 +664,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const blob = await response.blob();
       const fileToShare = new File([blob], file.name, { type: file.mime_type || blob.type });
 
-      // Share ONLY physical files with ZERO text/title!
       if (navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
         await navigator.share({
           files: [fileToShare]
@@ -710,7 +713,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const fileList = await Promise.all(filePromises);
 
-      // Share ONLY physical file objects with ZERO text or title!
       if (navigator.canShare && navigator.canShare({ files: fileList })) {
         await navigator.share({
           files: fileList
@@ -1129,13 +1131,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.homeSearchTrigger.addEventListener('click', () => switchTab('search'));
 
-    // Multi-Select Toggle Button (ONLY way to enter multi-select mode)
+    // Multi-Select Toggle Button (Single tap to toggle selection mode)
     elements.btnToggleMultiSelect.addEventListener('click', () => {
       state.isMultiSelect = !state.isMultiSelect;
-      if (state.isMultiSelect) {
-        elements.btnToggleMultiSelect.classList.add('active');
-      } else {
-        exitMultiSelectMode();
+      if (!state.isMultiSelect) {
+        state.selectedItems.clear();
       }
       updateMultiSelectUI();
     });
@@ -1143,7 +1143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.btnBulkShare.addEventListener('click', performBulkShare);
     elements.btnBulkTelegram.addEventListener('click', performBulkSendTelegram);
     elements.btnBulkDelete.addEventListener('click', performBulkDelete);
-    elements.btnCancelMultiSelect.addEventListener('click', exitMultiSelectMode);
 
     elements.btnFabAdd.addEventListener('click', () => {
       triggerHaptic('impact');
