@@ -422,7 +422,32 @@ app.post('/api/files/upload', upload.array('files', 100), (req, res) => {
 });
 
 /**
- * 8. Rename File
+ * 8. Bulk Delete Folders & Files
+ */
+app.post('/api/bulk/delete', (req, res) => {
+  try {
+    const userId = req.body.user_id || DEFAULT_USER_ID;
+    const folderIds = req.body.folder_ids || [];
+    const fileIds = req.body.file_ids || [];
+
+    if (folderIds.length > 0) {
+      const folderStmt = db.prepare(`DELETE FROM folders WHERE user_id = ? AND id = ?`);
+      folderIds.forEach(id => folderStmt.run(userId, id));
+    }
+
+    if (fileIds.length > 0) {
+      const fileStmt = db.prepare(`DELETE FROM files WHERE user_id = ? AND id = ?`);
+      fileIds.forEach(id => fileStmt.run(userId, id));
+    }
+
+    res.json({ success: true, message: 'Items deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * 9. Rename File
  */
 app.put('/api/files/:id', (req, res) => {
   try {
@@ -443,7 +468,7 @@ app.put('/api/files/:id', (req, res) => {
 });
 
 /**
- * 9. Dispatch Download File to Telegram Chat
+ * 10. Dispatch Download File to Telegram Chat
  */
 app.post('/api/files/:id/download', async (req, res) => {
   try {
@@ -464,7 +489,7 @@ app.post('/api/files/:id/download', async (req, res) => {
 });
 
 /**
- * 10. Toggle Star/Favorite
+ * 11. Toggle Star/Favorite
  */
 app.post('/api/files/:id/star', (req, res) => {
   try {
@@ -486,7 +511,7 @@ app.post('/api/files/:id/star', (req, res) => {
 });
 
 /**
- * 11. Delete File
+ * 12. Delete Single File
  */
 app.delete('/api/files/:id', (req, res) => {
   try {
@@ -501,7 +526,7 @@ app.delete('/api/files/:id', (req, res) => {
 });
 
 /**
- * 12. Customization Settings Endpoints
+ * 13. Customization Settings Endpoints
  */
 app.get('/api/settings', (req, res) => {
   try {

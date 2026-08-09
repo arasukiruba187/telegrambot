@@ -24,7 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dateFilter: 'all',
     sortBy: 'name',
     selectedFile: null,
-    contextTarget: null
+    contextTarget: null,
+    isMultiSelect: false,
+    selectedItems: new Map() // Map key: "type_id" -> { type: 'file'|'folder', item }
   };
 
   // DOM Elements Map
@@ -35,9 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
     explorerFoldersContainer: document.getElementById('explorer-folders-container'),
     explorerFilesContainer: document.getElementById('explorer-files-container'),
     explorerItemCount: document.getElementById('explorer-item-count'),
+    btnToggleMultiSelect: document.getElementById('btn-toggle-multiselect'),
     starredFilesList: document.getElementById('starred-files-list'),
     searchResultsList: document.getElementById('search-results-list'),
     resultsCountBadge: document.getElementById('results-count-badge'),
+
+    multiselectActionBar: document.getElementById('multiselect-action-bar'),
+    multiselectCountTag: document.getElementById('multiselect-count-tag'),
+    btnBulkShare: document.getElementById('btn-bulk-share'),
+    btnBulkTelegram: document.getElementById('btn-bulk-telegram'),
+    btnBulkDelete: document.getElementById('btn-bulk-delete'),
+    btnCancelMultiSelect: document.getElementById('btn-cancel-multiselect'),
 
     homeSearchTrigger: document.getElementById('home-search-trigger'),
     searchInput: document.getElementById('search-input'),
@@ -48,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnFabAdd: document.getElementById('btn-fab-add'),
     btnNewFolderHeader: document.getElementById('btn-new-folder-header'),
-    btnNewFolderExplorer: document.getElementById('btn-new-folder-explorer'),
 
     sheetCreateOptions: document.getElementById('sheet-create-options'),
     optionNewFolder: document.getElementById('option-new-folder'),
@@ -259,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Open Item Context Menu Sheet
   function openContextMenu(type, item) {
+    if (state.isMultiSelect) return;
     state.contextTarget = { type, item };
     elements.contextItemTitle.textContent = item.name;
     elements.contextItemSubtitle.textContent = type === 'folder' ? 'Folder' : `${fileTypeLabel(item.mime_type, item.category)} • ${formatBytes(item.size)}`;
@@ -271,6 +281,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (category === 'video') return 'Video';
     if (category === 'excel') return 'Spreadsheet';
     return 'Document';
+  }
+
+  // Multi-Select Mode Control
+  function toggleItemSelection(type, item) {
+    triggerHaptic();
+    const key = `${type}_${item.id}`;
+    if (state.selectedItems.has(key)) {
+      state.selectedItems.delete(key);
+    } else {
+      state.selectedItems.set(key, { type, item });
+    }
+    updateMultiSelectUI();
+  }
+
+  function updateMultiSelectUI() {
+    const count = state.selectedItems.size;
+    elements.multiselectCountTag.textContent = `${count} selected`;
+
+    if (count > 0 && state.isMultiSelect) {
+      elements.multiselectActionBar.classList.add('active');
+    } else if (count === 0 && !state.isMultiSelect) {
+      elements.multiselectActionBar.classList.remove('active');
+    }
+
+    refreshCurrentView();
+  }
+
+  function exitMultiSelectMode() {
+    state.isMultiSelect = false;
+    state.selectedItems.clear();
+    elements.btnToggleMultiSelect.classList.remove('active');
+    elements.multiselectActionBar.classList.remove('active');
+    refreshCurrentView();
   }
 
   // Switch View Tab (With Reset Folder Option)
@@ -336,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Render Explorer Folders & Files (Only Folder Name + Icon)
+  // Render Explorer Folders & Files
   function renderFolderExplorer(folders, files) {
     elements.explorerFoldersContainer.innerHTML = '';
     elements.explorerFilesContainer.innerHTML = '';
@@ -347,27 +390,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     folders.forEach(folder => {
+      const isSelected = state.selectedItems.has(`folder_${folder.id}`);
       const card = document.createElement('div');
-      card.className = 'folder-card-pro';
+      card.className = `folder-card-pro ${isSelected ? 'selected' : ''}`;
+      
+      const checkboxHtml = state.isMultiSelect ? `
+        <div class="select-checkbox ${isSelected ? 'selected' : ''}">
+          ${isSelected ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </div>
+      ` : '';
+
       card.innerHTML = `
+        ${checkboxHtml}
         <svg viewBox="0 0 24 24" class="folder-icon-svg" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <div class="folder-pro-name">${escapeHtml(folder.name)}</div>
       `;
 
       addLongPressListener(
         card,
-        () => loadFolderContents(folder.id),
-        () => openContextMenu('folder', folder)
+        () => {
+          if (state.isMultiSelect) {
+            toggleItemSelection('folder', folder);
+          } else {
+            loadFolderContents(folder.id);
+          }
+        },
+        () => {
+          if (!state.isMultiSelect) {
+            state.isMultiSelect = true;
+            elements.btnToggleMultiSelect.classList.add('active');
+            toggleItemSelection('folder', folder);
+          } else {
+            openContextMenu('folder', folder);
+          }
+        }
       );
 
       elements.explorerFoldersContainer.appendChild(card);
     });
 
     files.forEach(file => {
+      const isSelected = state.selectedItems.has(`file_${file.id}`);
       const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
       const row = document.createElement('div');
-      row.className = 'file-row-pro';
+      row.className = `file-row-pro ${isSelected ? 'selected' : ''}`;
+
+      const checkboxHtml = state.isMultiSelect ? `
+        <div class="select-checkbox ${isSelected ? 'selected' : ''}">
+          ${isSelected ? '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </div>
+      ` : '';
+
       row.innerHTML = `
+        ${checkboxHtml}
         <div class="file-type-badge ${iconInfo.class}">
           ${iconInfo.svg}
         </div>
@@ -383,14 +458,24 @@ document.addEventListener('DOMContentLoaded', () => {
       addLongPressListener(
         row,
         (e) => {
-          if (e.target && e.target.closest('.btn-star')) {
+          if (state.isMultiSelect) {
+            toggleItemSelection('file', file);
+          } else if (e.target && e.target.closest('.btn-star')) {
             e.stopPropagation();
             toggleStarFile(file.id);
           } else {
             openFileDetailsSheet(file);
           }
         },
-        () => openContextMenu('file', file)
+        () => {
+          if (!state.isMultiSelect) {
+            state.isMultiSelect = true;
+            elements.btnToggleMultiSelect.classList.add('active');
+            toggleItemSelection('file', file);
+          } else {
+            openContextMenu('file', file);
+          }
+        }
       );
 
       elements.explorerFilesContainer.appendChild(row);
@@ -460,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Render Matching Folders (Only Folder Name + Icon)
+      // Render Matching Folders
       if (hasFolders) {
         const folderHeader = document.createElement('div');
         folderHeader.className = 'section-label-text';
@@ -534,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Open Preview Bottom Sheet (Rich Media Preview: Image/Video/Doc)
+  // Open Preview Bottom Sheet
   function openFileDetailsSheet(file) {
     triggerHaptic();
     state.selectedFile = file;
@@ -546,9 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.labelStarPreview.textContent = file.is_starred ? 'Favorited' : 'Favorite';
 
-    // Clear previous media preview
     elements.previewMediaContainer.innerHTML = '';
-
     const contentUrl = `/api/files/${file.id}/content`;
 
     if (file.mime_type.startsWith('image/') || file.category === 'photo') {
@@ -565,7 +648,6 @@ document.addEventListener('DOMContentLoaded', () => {
       video.playsInline = true;
       elements.previewMediaContainer.appendChild(video);
     } else {
-      // Document / PDF / Excel Icon Box
       const heroIcon = document.createElement('div');
       heroIcon.className = `file-hero-icon ${iconInfo.class}`;
       heroIcon.innerHTML = iconInfo.svg;
@@ -575,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.sheetFileDetails.classList.add('active');
   }
 
-  // Native OS Share Exact File (WhatsApp, Telegram, Facebook, Mail, etc.)
+  // Native OS Share (Physical Files ONLY, Zero Text Attached!)
   async function shareExactFile() {
     if (!state.selectedFile) return;
     const file = state.selectedFile;
@@ -588,11 +670,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const blob = await response.blob();
       const fileToShare = new File([blob], file.name, { type: file.mime_type || blob.type });
 
+      // Share ONLY physical files with ZERO text/title!
       if (navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
         await navigator.share({
-          files: [fileToShare],
-          title: file.name,
-          text: `Sharing document: ${file.name}`
+          files: [fileToShare]
         });
         showToast('✓ Shared successfully!', 'success');
         return;
@@ -600,10 +681,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (navigator.share) {
         await navigator.share({
-          title: file.name,
-          url: contentUrl
+          files: [fileToShare]
         });
-        showToast('✓ Shared link via native OS!', 'success');
+        showToast('✓ Shared file via native OS!', 'success');
       } else {
         await navigator.clipboard.writeText(contentUrl);
         showToast('🔗 Direct file link copied to clipboard!', 'success');
@@ -612,6 +692,126 @@ document.addEventListener('DOMContentLoaded', () => {
       if (err.name !== 'AbortError') {
         showToast('Sharing cancelled or unavailable', 'error');
       }
+    }
+  }
+
+  // Bulk Multi-Select Share (Physical Files ONLY, Zero Text Attached!)
+  async function performBulkShare() {
+    const selectedFileObjs = [];
+    state.selectedItems.forEach(itemObj => {
+      if (itemObj.type === 'file') selectedFileObjs.push(itemObj.item);
+    });
+
+    if (selectedFileObjs.length === 0) {
+      showToast('Select at least one file to share', 'error');
+      return;
+    }
+
+    triggerHaptic('impact');
+    try {
+      showToast(`⏳ Preparing ${selectedFileObjs.length} file(s) for sharing...`, 'info');
+
+      const filePromises = selectedFileObjs.map(async (fileObj) => {
+        const contentUrl = `/api/files/${fileObj.id}/content`;
+        const response = await fetch(contentUrl);
+        const blob = await response.blob();
+        return new File([blob], fileObj.name, { type: fileObj.mime_type || blob.type });
+      });
+
+      const fileList = await Promise.all(filePromises);
+
+      // Share ONLY physical file objects with ZERO text or title!
+      if (navigator.canShare && navigator.canShare({ files: fileList })) {
+        await navigator.share({
+          files: fileList
+        });
+        showToast('✓ Files shared successfully!', 'success');
+        exitMultiSelectMode();
+        return;
+      }
+
+      if (navigator.share) {
+        await navigator.share({
+          files: fileList
+        });
+        exitMultiSelectMode();
+      } else {
+        showToast('Multi-file sharing not supported on this browser', 'error');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        showToast('Sharing cancelled or failed', 'error');
+      }
+    }
+  }
+
+  // Bulk Send Selected Files to Telegram Chat
+  async function performBulkSendTelegram() {
+    const selectedFileObjs = [];
+    state.selectedItems.forEach(itemObj => {
+      if (itemObj.type === 'file') selectedFileObjs.push(itemObj.item);
+    });
+
+    if (selectedFileObjs.length === 0) {
+      showToast('Select at least one file to send to chat', 'error');
+      return;
+    }
+
+    triggerHaptic('impact');
+    showToast(`⏳ Sending ${selectedFileObjs.length} file(s) to Telegram chat...`, 'info');
+
+    let successCount = 0;
+    for (const file of selectedFileObjs) {
+      try {
+        const res = await fetch(`/api/files/${file.id}/download`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: state.user.id, chat_id: state.user.id })
+        });
+        const data = await res.json();
+        if (data.success) successCount++;
+      } catch (err) {}
+    }
+
+    triggerHaptic('success');
+    showToast(`✓ Delivered ${successCount} file(s) to Telegram chat!`, 'success');
+    exitMultiSelectMode();
+  }
+
+  // Bulk Delete Selected Folders & Files
+  async function performBulkDelete() {
+    const folderIds = [];
+    const fileIds = [];
+
+    state.selectedItems.forEach((itemObj) => {
+      if (itemObj.type === 'folder') folderIds.push(itemObj.item.id);
+      else if (itemObj.type === 'file') fileIds.push(itemObj.item.id);
+    });
+
+    const totalCount = folderIds.length + fileIds.length;
+    if (totalCount === 0) return;
+
+    if (!confirm(`Are you sure you want to delete ${totalCount} selected item(s)?`)) return;
+
+    triggerHaptic('impact');
+    try {
+      const res = await fetch('/api/bulk/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: state.user.id,
+          folder_ids: folderIds,
+          file_ids: fileIds
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showToast(`🗑 Deleted ${totalCount} item(s)`, 'success');
+        exitMultiSelectMode();
+      }
+    } catch (err) {
+      showToast('Error deleting selected items', 'error');
     }
   }
 
@@ -939,6 +1139,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.homeSearchTrigger.addEventListener('click', () => switchTab('search'));
 
+    // Multi-Select Toggle Button
+    elements.btnToggleMultiSelect.addEventListener('click', () => {
+      state.isMultiSelect = !state.isMultiSelect;
+      if (state.isMultiSelect) {
+        elements.btnToggleMultiSelect.classList.add('active');
+      } else {
+        exitMultiSelectMode();
+      }
+      refreshCurrentView();
+    });
+
+    elements.btnBulkShare.addEventListener('click', performBulkShare);
+    elements.btnBulkTelegram.addEventListener('click', performBulkSendTelegram);
+    elements.btnBulkDelete.addEventListener('click', performBulkDelete);
+    elements.btnCancelMultiSelect.addEventListener('click', exitMultiSelectMode);
+
     elements.btnFabAdd.addEventListener('click', () => {
       triggerHaptic('impact');
       elements.sheetCreateOptions.classList.add('active');
@@ -951,12 +1167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (elements.btnNewFolderHeader) {
       elements.btnNewFolderHeader.addEventListener('click', () => {
-        elements.modalNewFolder.classList.add('active');
-      });
-    }
-
-    if (elements.btnNewFolderExplorer) {
-      elements.btnNewFolderExplorer.addEventListener('click', () => {
         elements.modalNewFolder.classList.add('active');
       });
     }

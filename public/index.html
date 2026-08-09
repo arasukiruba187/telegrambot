@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="pro-theme">
-  <!-- Laptop Drag & Drop Overlay (Fixed Fullscreen Backdrop) -->
+  <!-- Laptop Drag & Drop Overlay (Fixed Fullscreen Modal, Hidden by Default) -->
   <div id="drag-drop-overlay" class="drag-drop-overlay">
     <div class="drag-drop-box">
       <div class="drag-drop-icon">
@@ -66,9 +66,13 @@
           </span>
         </div>
 
-        <!-- Explorer Control Bar -->
+        <!-- Explorer Control Bar with Multi-Select Toggle -->
         <div class="explorer-control-row">
           <span class="count-badge" id="explorer-item-count">0 items</span>
+          <button class="btn-select-toggle" id="btn-toggle-multiselect">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <span>Select</span>
+          </button>
         </div>
 
         <!-- Folders Grid Section -->
@@ -134,6 +138,33 @@
         <div class="files-stack" id="search-results-list"></div>
       </section>
     </main>
+
+    <!-- Floating Multi-Select Action Bar (Appears when items are selected) -->
+    <div id="multiselect-action-bar" class="multiselect-bar">
+      <div class="multiselect-bar-content">
+        <span class="multiselect-count-badge" id="multiselect-count-tag">0 selected</span>
+        <div class="multiselect-actions">
+          <button class="btn-multi-action share" id="btn-bulk-share" title="Share Selected Files directly via WhatsApp, Telegram, etc.">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span>Share</span>
+          </button>
+
+          <button class="btn-multi-action telegram" id="btn-bulk-telegram" title="Send selected files to Telegram chat">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span>Send</span>
+          </button>
+
+          <button class="btn-multi-action danger" id="btn-bulk-delete" title="Delete selected items">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <span>Delete</span>
+          </button>
+
+          <button class="btn-multi-action close" id="btn-cancel-multiselect" title="Exit select mode">
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Bottom Navigation Bar -->
     <nav class="bottom-nav-bar">
