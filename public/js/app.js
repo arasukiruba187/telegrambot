@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     dateFilter: 'all',
     sortBy: 'newest',
     selectedFile: null,
-    contextTarget: null // { type: 'folder' | 'file', item: object }
+    contextTarget: null
   };
 
   // DOM Elements Map
@@ -174,43 +174,92 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Helper: Long Press (Hold) Event Detector
+  // Helper: Rock-Solid Touch Scroll & Long Press Detector
   function addLongPressListener(element, onClickCallback, onLongPressCallback) {
     let pressTimer = null;
     let isLongPress = false;
+    let isScrolling = false;
+    let startX = 0;
+    let startY = 0;
 
-    const startPress = (e) => {
+    const startTouch = (e) => {
+      if (e.touches && e.touches.length > 1) return;
+      const touch = e.touches ? e.touches[0] : e;
+      startX = touch.clientX;
+      startY = touch.clientY;
       isLongPress = false;
+      isScrolling = false;
+
+      if (pressTimer) clearTimeout(pressTimer);
       pressTimer = setTimeout(() => {
-        isLongPress = true;
-        triggerHaptic('impact');
-        onLongPressCallback(e);
-      }, 450);
+        if (!isScrolling) {
+          isLongPress = true;
+          triggerHaptic('impact');
+          onLongPressCallback(e);
+        }
+      }, 500);
     };
 
-    const cancelPress = () => {
+    const moveTouch = (e) => {
+      if (!e.touches) return;
+      const touch = e.touches[0];
+      const deltaX = Math.abs(touch.clientX - startX);
+      const deltaY = Math.abs(touch.clientY - startY);
+
+      // If user moved finger more than 8 pixels, user is SCROLLING! Cancel long press timer.
+      if (deltaX > 8 || deltaY > 8) {
+        isScrolling = true;
+        if (pressTimer) {
+          clearTimeout(pressTimer);
+          pressTimer = null;
+        }
+      }
+    };
+
+    const endTouch = (e) => {
       if (pressTimer) {
         clearTimeout(pressTimer);
         pressTimer = null;
       }
+
+      // Only trigger click if user did NOT scroll and it was NOT a long press
+      if (!isScrolling && !isLongPress && onClickCallback) {
+        onClickCallback(e);
+      }
     };
 
-    element.addEventListener('touchstart', startPress, { passive: true });
-    element.addEventListener('touchend', (e) => {
-      cancelPress();
-      if (!isLongPress && onClickCallback) onClickCallback(e);
-    });
-    element.addEventListener('touchmove', cancelPress, { passive: true });
+    // Attach Touch Listeners for Mobile Safari / Chrome
+    element.addEventListener('touchstart', startTouch, { passive: true });
+    element.addEventListener('touchmove', moveTouch, { passive: true });
+    element.addEventListener('touchend', endTouch);
 
-    element.addEventListener('mousedown', startPress);
-    element.addEventListener('mouseup', (e) => {
-      cancelPress();
-      if (!isLongPress && onClickCallback) onClickCallback(e);
+    // Mouse Fallback for Desktop Web
+    element.addEventListener('mousedown', (e) => {
+      startX = e.clientX;
+      startY = e.clientY;
+      isLongPress = false;
+      isScrolling = false;
+      pressTimer = setTimeout(() => {
+        if (!isScrolling) {
+          isLongPress = true;
+          triggerHaptic('impact');
+          onLongPressCallback(e);
+        }
+      }, 500);
     });
-    element.addEventListener('mouseleave', cancelPress);
+
+    element.addEventListener('mouseup', (e) => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+      if (!isScrolling && !isLongPress && onClickCallback) {
+        onClickCallback(e);
+      }
+    });
   }
 
-  // Open Item Context Menu Sheet (Long-Press trigger)
+  // Open Item Context Menu Sheet
   function openContextMenu(type, item) {
     state.contextTarget = { type, item };
     elements.contextItemTitle.textContent = item.name;
@@ -258,7 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const userId = state.user.id;
       elements.userDisplayName.textContent = state.user.first_name;
 
-      // Fetch root folders
       const folderRes = await fetch(`/api/folders?user_id=${userId}&parent_id=null`);
       const folderData = await folderRes.json();
 
@@ -270,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Render Folders Grid on Home with Long Press Listener
+  // Render Folders Grid on Home
   function renderHomeFolders(folders) {
     elements.homeFoldersGrid.innerHTML = '';
     if (!folders || folders.length === 0) {
@@ -338,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Render Explorer Folders & Files with Long-Press Handlers
+  // Render Explorer Folders & Files
   function renderFolderExplorer(folders, files) {
     elements.explorerFoldersContainer.innerHTML = '';
     elements.explorerFilesContainer.innerHTML = '';
@@ -381,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
       addLongPressListener(
         row,
         (e) => {
-          if (e.target.closest('.btn-star')) {
+          if (e.target && e.target.closest('.btn-star')) {
             e.stopPropagation();
             toggleStarFile(file.id);
           } else {
@@ -729,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.btnConfirmFolder.addEventListener('click', createFolder);
 
-    // Context Menu Handlers (Long-Press options)
+    // Context Menu Handlers
     elements.contextOptionRename.addEventListener('click', () => {
       elements.sheetItemContext.classList.remove('active');
       if (state.contextTarget) {
