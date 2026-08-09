@@ -268,7 +268,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Open Item Context Menu Sheet
   function openContextMenu(type, item) {
-    if (state.isMultiSelect) return;
     state.contextTarget = { type, item };
     elements.contextItemTitle.textContent = item.name;
     elements.contextItemSubtitle.textContent = type === 'folder' ? 'Folder' : `${fileTypeLabel(item.mime_type, item.category)} • ${formatBytes(item.size)}`;
@@ -295,13 +294,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateMultiSelectUI();
   }
 
+  // Bottom Action Bar displays ONLY when at least 1 item is selected!
   function updateMultiSelectUI() {
     const count = state.selectedItems.size;
     elements.multiselectCountTag.textContent = `${count} selected`;
 
     if (count > 0 && state.isMultiSelect) {
       elements.multiselectActionBar.classList.add('active');
-    } else if (count === 0 && !state.isMultiSelect) {
+    } else {
       elements.multiselectActionBar.classList.remove('active');
     }
 
@@ -416,13 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         },
         () => {
-          if (!state.isMultiSelect) {
-            state.isMultiSelect = true;
-            elements.btnToggleMultiSelect.classList.add('active');
-            toggleItemSelection('folder', folder);
-          } else {
-            openContextMenu('folder', folder);
-          }
+          // Long press ALWAYS triggers Context Menu sheet (Rename, Delete)
+          openContextMenu('folder', folder);
         }
       );
 
@@ -468,13 +463,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         },
         () => {
-          if (!state.isMultiSelect) {
-            state.isMultiSelect = true;
-            elements.btnToggleMultiSelect.classList.add('active');
-            toggleItemSelection('file', file);
-          } else {
-            openContextMenu('file', file);
-          }
+          // Long press ALWAYS triggers Context Menu sheet (Rename, Delete)
+          openContextMenu('file', file);
         }
       );
 
@@ -1139,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.homeSearchTrigger.addEventListener('click', () => switchTab('search'));
 
-    // Multi-Select Toggle Button
+    // Multi-Select Toggle Button (ONLY way to enter multi-select mode)
     elements.btnToggleMultiSelect.addEventListener('click', () => {
       state.isMultiSelect = !state.isMultiSelect;
       if (state.isMultiSelect) {
@@ -1147,7 +1137,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         exitMultiSelectMode();
       }
-      refreshCurrentView();
+      updateMultiSelectUI();
     });
 
     elements.btnBulkShare.addEventListener('click', performBulkShare);
