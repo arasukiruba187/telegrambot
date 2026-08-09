@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentFolderId: null,
     selectedCategory: 'all',
     dateFilter: 'all',
-    sortBy: 'newest',
+    sortBy: 'name', // Default sort: Ascending Name (A-Z)
     selectedFile: null,
     contextTarget: null
   };
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // API Call: Fetch Folder Contents (Primary view)
+  // API Call: Fetch Folder Contents (Always Sorted Ascending A-Z)
   async function loadFolderContents(folderId = null) {
     try {
       elements.userDisplayName.textContent = state.user.first_name;

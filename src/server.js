@@ -111,7 +111,7 @@ app.get('/api/vault', (req, res) => {
       FROM files f 
       LEFT JOIN folders fol ON f.folder_id = fol.id 
       WHERE f.user_id = ? 
-      ORDER BY f.created_at DESC LIMIT 5
+      ORDER BY LOWER(f.name) ASC LIMIT 5
     `).all(userId);
 
     res.json({
@@ -137,7 +137,7 @@ app.get('/api/vault', (req, res) => {
 });
 
 /**
- * 2. Get Folder Tree & Direct Children
+ * 2. Get Folder Tree & Direct Children (Always Sorted Ascending A-Z)
  */
 app.get('/api/folders', (req, res) => {
   try {
@@ -154,7 +154,7 @@ app.get('/api/folders', (req, res) => {
       WHERE f.user_id = ? AND (
         (? IS NULL AND f.parent_id IS NULL) OR (f.parent_id = ?)
       )
-      ORDER BY f.name ASC
+      ORDER BY LOWER(f.name) ASC
     `).all(userId, parentId, parentId);
 
     const files = db.prepare(`
@@ -162,7 +162,7 @@ app.get('/api/folders', (req, res) => {
       WHERE user_id = ? AND (
         (? IS NULL AND folder_id IS NULL) OR (folder_id = ?)
       )
-      ORDER BY created_at DESC
+      ORDER BY LOWER(name) ASC
     `).all(userId, parentId, parentId);
 
     const breadcrumbs = getBreadcrumbs(parentId, userId);
@@ -245,7 +245,7 @@ app.delete('/api/folders/:id', (req, res) => {
 });
 
 /**
- * 6. Files & Folders Unified Search API
+ * 6. Files & Folders Unified Search API (Always Sorted Ascending A-Z)
  */
 app.get('/api/files', (req, res) => {
   try {
@@ -256,7 +256,7 @@ app.get('/api/files', (req, res) => {
     const category = req.query.category || 'all';
     const starredOnly = req.query.starred === '1';
     const dateFilter = req.query.date_filter || 'all';
-    const sortBy = req.query.sort_by || 'newest';
+    const sortBy = req.query.sort_by || 'name';
 
     // Search Folders matching query
     let matchingFolders = [];
@@ -266,7 +266,7 @@ app.get('/api/files', (req, res) => {
           (SELECT COUNT(*) FROM files WHERE folder_id = f.id) as file_count
         FROM folders f 
         WHERE f.user_id = ? AND LOWER(f.name) LIKE ?
-        ORDER BY f.name ASC
+        ORDER BY LOWER(f.name) ASC
       `).all(userId, `%${query}%`);
     }
 
@@ -308,10 +308,15 @@ app.get('/api/files', (req, res) => {
       params.push(monthAgo);
     }
 
-    if (sortBy === 'newest') sql += ` ORDER BY f.created_at DESC`;
-    else if (sortBy === 'oldest') sql += ` ORDER BY f.created_at ASC`;
-    else if (sortBy === 'name') sql += ` ORDER BY f.name ASC`;
-    else if (sortBy === 'size') sql += ` ORDER BY f.size DESC`;
+    if (sortBy === 'name' || !req.query.sort_by) {
+      sql += ` ORDER BY LOWER(f.name) ASC`;
+    } else if (sortBy === 'newest') {
+      sql += ` ORDER BY f.created_at DESC`;
+    } else if (sortBy === 'oldest') {
+      sql += ` ORDER BY f.created_at ASC`;
+    } else if (sortBy === 'size') {
+      sql += ` ORDER BY f.size DESC`;
+    }
 
     const files = db.prepare(sql).all(...params);
 
