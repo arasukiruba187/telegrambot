@@ -31,8 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     userDisplayName: document.getElementById('user-display-name'),
 
     homeFoldersGrid: document.getElementById('home-folders-grid'),
-    homeFilesCount: document.getElementById('home-files-count'),
-    recentFilesList: document.getElementById('recent-files-list'),
 
     breadcrumbsBar: document.getElementById('breadcrumbs-bar'),
     explorerFoldersContainer: document.getElementById('explorer-folders-container'),
@@ -190,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // API Call: Fetch Home Folders & Files
+  // API Call: Fetch Home Folders
   async function loadHomeOverview() {
     try {
       const userId = state.user.id;
@@ -203,15 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (folderData.success) {
         renderHomeFolders(folderData.folders);
       }
-
-      // Fetch vault summary
-      const vaultRes = await fetch(`/api/vault?user_id=${userId}`);
-      const vaultData = await vaultRes.json();
-
-      if (vaultData.success) {
-        elements.homeFilesCount.textContent = `${vaultData.stats.total_files} files`;
-        renderRecentFiles(vaultData.recent_files);
-      }
     } catch (err) {
       console.error('Failed to load home overview:', err);
     }
@@ -221,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderHomeFolders(folders) {
     elements.homeFoldersGrid.innerHTML = '';
     if (!folders || folders.length === 0) {
-      elements.homeFoldersGrid.innerHTML = '<div style="grid-column: span 2; padding: 16px; text-align: center; color: var(--text-muted);">No folders created</div>';
+      elements.homeFoldersGrid.innerHTML = '<div style="grid-column: span 2; padding: 24px; text-align: center; color: var(--text-muted);">No folders created</div>';
       return;
     }
 
@@ -240,47 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       elements.homeFoldersGrid.appendChild(card);
-    });
-  }
-
-  // Render Recent Files List
-  function renderRecentFiles(files) {
-    elements.recentFilesList.innerHTML = '';
-    if (!files || files.length === 0) {
-      elements.recentFilesList.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);">No documents in your workspace yet.</div>';
-      return;
-    }
-
-    files.forEach(file => {
-      const iconInfo = getFileIconInfo(file.mime_type, file.category, file.name);
-      const row = document.createElement('div');
-      row.className = 'file-row-pro';
-      row.innerHTML = `
-        <div class="file-type-badge ${iconInfo.class}">
-          ${iconInfo.svg}
-        </div>
-        <div class="file-info-col">
-          <div class="file-name-text">${escapeHtml(file.name)}</div>
-          <div class="file-sub-info">
-            <span>${formatBytes(file.size)} • ${formatDate(file.created_at)}</span>
-            ${file.folder_name ? `<span class="path-tag">${escapeHtml(file.folder_name)}</span>` : ''}
-          </div>
-        </div>
-        <button class="btn-star ${file.is_starred ? 'starred' : ''}">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="${file.is_starred ? '#fbbf24' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </button>
-      `;
-
-      row.addEventListener('click', (e) => {
-        if (e.target.closest('.btn-star')) {
-          e.stopPropagation();
-          toggleStarFile(file.id);
-        } else {
-          openFileDetailsSheet(file);
-        }
-      });
-
-      elements.recentFilesList.appendChild(row);
     });
   }
 
@@ -622,12 +570,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event Bindings
   function bindEvents() {
-    // Navigation Buttons Listener
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.getAttribute('data-tab');
         if (tab === 'files') {
-          switchTab('files', true); // Reset to root folder level to show all created folders!
+          switchTab('files', true);
         } else {
           switchTab(tab);
         }
