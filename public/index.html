@@ -17,14 +17,14 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="pro-theme">
-  <!-- Laptop Drag & Drop Overlay -->
+  <!-- Laptop Drag & Drop Overlay (Fixed Fullscreen Backdrop) -->
   <div id="drag-drop-overlay" class="drag-drop-overlay">
     <div class="drag-drop-box">
       <div class="drag-drop-icon">
-        <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       </div>
       <h2>Drop Files or Folders Here</h2>
-      <p>Upload directly to your active vault directory</p>
+      <p>Upload directly to your active directory</p>
     </div>
   </div>
 
@@ -42,8 +42,8 @@
       </div>
       <div class="header-actions">
         <button class="btn-create-folder-sm" id="btn-new-folder-header">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-          <span>New Folder</span>
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          <span>+ New Folder</span>
         </button>
       </div>
     </header>
@@ -53,7 +53,7 @@
       <!-- 1. FILES EXPLORER VIEW (Primary Default Screen) -->
       <section id="view-files" class="tab-view active">
         <!-- Search Trigger Input -->
-        <div class="search-trigger-bar" id="home-search-trigger" style="margin-bottom: 12px;">
+        <div class="search-trigger-bar" id="home-search-trigger">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <span class="search-placeholder">Search all files and folders...</span>
         </div>
@@ -62,24 +62,20 @@
         <div class="breadcrumb-bar" id="breadcrumbs-bar">
           <span class="crumb-item active">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 2-2 2v13c0 1.1.9 2 2 2z"/></svg>
-            <span>Root Vault</span>
+            <span>Vault</span>
           </span>
         </div>
 
         <!-- Explorer Control Bar -->
         <div class="explorer-control-row">
           <span class="count-badge" id="explorer-item-count">0 items</span>
-          <button class="btn-create-folder-sm" id="btn-new-folder-explorer">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-            <span>New Folder</span>
-          </button>
         </div>
 
         <!-- Folders Grid Section -->
         <div id="explorer-folders-container" class="folders-grid"></div>
 
         <!-- Files Section -->
-        <div id="explorer-files-container" class="files-stack" style="margin-top: 16px;"></div>
+        <div id="explorer-files-container" class="files-stack" style="margin-top: 12px;"></div>
       </section>
 
       <!-- 2. FAVORITES VIEW -->
@@ -96,7 +92,7 @@
         <!-- Search Input Box -->
         <div class="search-input-box">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="search-input" placeholder="Search by document name or extension..." autocomplete="off">
+          <input type="text" id="search-input" placeholder="Search folders or files..." autocomplete="off">
           <button class="btn-clear-search" id="btn-clear-search" style="display:none;">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>

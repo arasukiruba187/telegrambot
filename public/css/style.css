@@ -1,13 +1,13 @@
 /* ==========================================================================
-   ✦ PROFESSIONAL DOCUMENT & FILES MANAGER - STYLESHEET
+   ✦ TELEGRAM FILE MANAGER - CLASSY & COOL DESIGN SYSTEM
    ========================================================================== */
 
 :root {
   --bg-dark: #0b0f19;
   --bg-card: #131b2e;
   --bg-card-hover: #1c2742;
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-active: rgba(59, 130, 246, 0.4);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-active: rgba(59, 130, 246, 0.5);
 
   --blue-primary: #3b82f6;
   --blue-hover: #2563eb;
@@ -17,9 +17,9 @@
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  --radius-xl: 18px;
-  --radius-lg: 12px;
-  --radius-md: 8px;
+  --radius-xl: 20px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
   --radius-sm: 6px;
 
   --font-main: 'Inter', system-ui, -apple-system, sans-serif;
@@ -43,6 +43,66 @@ body.pro-theme {
   overflow-x: hidden;
 }
 
+/* Laptop Drag & Drop Overlay (Fixed Fullscreen Modal, Hidden by Default) */
+.drag-drop-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(11, 15, 25, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  pointer-events: none;
+}
+
+.drag-drop-overlay.active {
+  display: flex !important;
+  pointer-events: auto;
+  animation: fadeIn 0.2s ease;
+}
+
+.drag-drop-box {
+  background: var(--bg-card);
+  border: 2px dashed rgba(59, 130, 246, 0.5);
+  border-radius: var(--radius-xl);
+  padding: 40px 30px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+.drag-drop-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+.drag-drop-box h2 {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.drag-drop-box p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 #app-container {
   max-width: 480px;
   margin: 0 auto;
@@ -58,7 +118,7 @@ body.pro-theme {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 14px 18px;
   position: sticky;
   top: 0;
   background: rgba(11, 15, 25, 0.92);
@@ -75,22 +135,22 @@ body.pro-theme {
 }
 
 .brand-icon {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md);
   background: var(--blue-gradient);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
 }
 
 .brand-name {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 17px;
-  letter-spacing: 0.5px;
+  font-size: 16px;
+  letter-spacing: 0.3px;
 }
 
 .brand-user-name {
@@ -111,16 +171,18 @@ body.pro-theme {
   display: flex;
   align-items: center;
   gap: 6px;
+  transition: all 0.2s ease;
 }
 
 .btn-create-folder-sm:active {
   background: var(--blue-primary);
   color: #fff;
+  transform: scale(0.96);
 }
 
 /* Main Content Area */
 #main-content {
-  padding: 16px 20px;
+  padding: 16px 18px;
   flex: 1;
 }
 
@@ -142,46 +204,59 @@ body.pro-theme {
 .search-trigger-bar {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   gap: 12px;
   color: var(--text-muted);
   cursor: pointer;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
+}
+
+.search-trigger-bar:hover {
+  border-color: var(--border-active);
+  background: var(--bg-card-hover);
 }
 
 .search-placeholder {
   font-size: 14px;
 }
 
-/* Section Header Bar */
-.section-label-bar {
+/* Explorer Breadcrumbs */
+.breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0;
+  margin-bottom: 12px;
+}
+
+.crumb-item {
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.crumb-item.active {
+  color: var(--blue-primary);
+  font-weight: 600;
+}
+
+.explorer-control-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.section-label-text {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-}
-
-.section-link-btn {
-  background: none;
-  border: none;
-  color: var(--blue-primary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.section-count-tag {
-  font-size: 12px;
+.count-badge {
+  font-size: 13px;
   color: var(--text-muted);
 }
 
@@ -201,7 +276,7 @@ body.pro-theme {
   transition: all 0.2s ease;
 }
 
-.folder-card-pro:hover {
+.folder-card-pro:hover, .folder-card-pro:active {
   background: var(--bg-card-hover);
   border-color: var(--border-active);
   transform: translateY(-2px);
@@ -245,7 +320,7 @@ body.pro-theme {
   transition: all 0.2s ease;
 }
 
-.file-row-pro:hover {
+.file-row-pro:hover, .file-row-pro:active {
   background: var(--bg-card-hover);
   border-color: var(--border-active);
 }
@@ -310,43 +385,7 @@ body.pro-theme {
   color: #fbbf24;
 }
 
-/* Explorer Breadcrumbs */
-.breadcrumb-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 6px 0;
-  margin-bottom: 12px;
-}
-
-.crumb-item {
-  font-size: 13px;
-  color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.crumb-item.active {
-  color: var(--blue-primary);
-  font-weight: 600;
-}
-
-.explorer-control-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.count-badge {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-/* Search Page */
+/* Search View */
 .search-input-box {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -613,6 +652,140 @@ body.pro-theme {
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+/* Center Dialog Modals */
+.center-dialog-card {
+  background: #111726;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  width: 90%;
+  max-width: 380px;
+  padding: 24px;
+  text-align: center;
+  margin: auto;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.dialog-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px auto;
+}
+
+.center-dialog-card h2 {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.dialog-input-group {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.dialog-input-group label {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.dialog-input-group input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+}
+
+.dialog-input-group input:focus {
+  border-color: var(--border-active);
+}
+
+.dialog-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-cancel {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  flex: 1;
+  background: var(--blue-gradient);
+  border: none;
+  color: #fff;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Upload Progress Modal */
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.spinner-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.spinner-svg {
+  transform: rotate(-90deg);
+}
+
+.progress-val {
+  position: absolute;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.upload-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.upload-filename {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.upload-metrics {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  margin-bottom: 16px;
 }
 
 /* File Preview Sheet & Rich Media Styles */
