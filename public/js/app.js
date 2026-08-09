@@ -164,8 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Switch View Tab
-  function switchTab(tabName) {
+  // Switch View Tab (With Reset Folder Option)
+  function switchTab(tabName, resetFolder = false) {
     triggerHaptic();
     state.currentTab = tabName;
     document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
@@ -177,10 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeNavBtn = document.querySelector(`.nav-btn[data-tab="${tabName}"]`);
     if (activeNavBtn) activeNavBtn.classList.add('active');
 
-    if (tabName === 'home') loadHomeOverview();
-    else if (tabName === 'files') loadFolderContents(state.currentFolderId);
-    else if (tabName === 'starred') loadStarredFiles();
-    else if (tabName === 'search') {
+    if (tabName === 'home') {
+      loadHomeOverview();
+    } else if (tabName === 'files') {
+      if (resetFolder) state.currentFolderId = null;
+      loadFolderContents(state.currentFolderId);
+    } else if (tabName === 'starred') {
+      loadStarredFiles();
+    } else if (tabName === 'search') {
       elements.searchInput.focus();
       triggerSearch();
     }
@@ -618,8 +622,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event Bindings
   function bindEvents() {
+    // Navigation Buttons Listener
     document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        if (tab === 'files') {
+          switchTab('files', true); // Reset to root folder level to show all created folders!
+        } else {
+          switchTab(tab);
+        }
+      });
     });
 
     elements.homeSearchTrigger.addEventListener('click', () => switchTab('search'));
@@ -663,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.selectedFile) toggleStarFile(state.selectedFile.id);
     });
     elements.btnDeleteFile.addEventListener('click', deleteSelectedFile);
-    elements.btnShareFile.addEventListener('click', () => showToast('🔗 Direct vault link copied!'));
+    elements.btnShareFile.addEventListener('click', () => showToast('🔗 Direct link copied!'));
 
     document.querySelectorAll('.sheet-backdrop').forEach(backdrop => {
       backdrop.addEventListener('click', (e) => {
@@ -700,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.selectDateFilter.addEventListener('change', triggerSearch);
     elements.selectSortBy.addEventListener('change', triggerSearch);
 
-    elements.btnViewAllFolders.addEventListener('click', () => switchTab('files'));
+    elements.btnViewAllFolders.addEventListener('click', () => switchTab('files', true));
   }
 
   function escapeHtml(str) {
